@@ -1,0 +1,14 @@
+/* Localizable.strings — DynamicNotch (Turkish) */
+
+"battery.charging" = "Şarj oluyor";
+"battery.low" = "Düşük batarya";
+"battery.full" = "Batarya dolu";
+"bluetooth.connected" = "Bağlandı";
+"bluetooth.disconnected" = "Bağlantı kesildi";
+"wifi.connected" = "Wi-Fi Bağlandı";
+"wifi.disconnected" = "Wi-Fi Bağlantısı Kesildi";
+"vpn.connected" = "VPN Bağlandı";
+"screen.recording" = "Ekran Kaydediliyor";
+"settings.title" = "DynamicNotch Ayarları";
+"menu.settings" = "Ayarlar…";
+"menu.quit" = "Çıkış";

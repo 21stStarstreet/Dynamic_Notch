@@ -1,0 +1,81 @@
+# ==============================================================================
+# DynamicNotch - Comprehensive .gitignore for macOS & Swift Development
+# ==============================================================================
+
+# ── Dedicated Local Ignore Directory ──
+ignore/
+/ignore/
+
+# ── macOS System Files ──
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.TemporaryItems
+.fseventsd
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDouble
+.LSOverride
+
+# ── Xcode / Apple Build & User Artifacts ──
+build/
+build_*/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcuserstate
+*.xcbkptlist
+*.xccheckout
+*.xcscmblueprint
+
+# ── Binaries, Bundles & Distribution Packages ──
+*.app
+*.dmg
+*.zip
+*.tar.gz
+*.ipa
+*.dSYM/
+*.dSYM.zip
+*.bcsymbolmap
+
+# ── Swift Package Manager (SPM) ──
+.build/
+Packages/
+Package.pins
+Package.resolved
+*.resolved
+.swiftpm/
+.swiftpm/xcode
+
+# ── Logs & Debugging ──
+*.log
+spotify_debug.log
+
+# ── Environment & Local Secrets ──
+.env
+.env.*
+!.env.example
+
+# ── Editors & IDEs ──
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# ── Scratch & Local Scripts ──
+scratch/

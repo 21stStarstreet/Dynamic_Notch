@@ -1,0 +1,1223 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		008A7A59BB6B2BDE2A223401 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A8DC18C3B21D8B4D7E7B9AF /* CoreAudio.framework */; };
+		0652AAFE37C40E26566095D8 /* CircularBatteryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFF0F6BE8565E4674E9CE78C /* CircularBatteryView.swift */; };
+		0B191AA9A1C7ABD4CA47F0F5 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F717893C9F6F9062E8ECD55E /* Network.framework */; };
+		0D2884DDE18CE259FAF34F74 /* NotchState.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10EFEE840A6D3BAF3072691 /* NotchState.swift */; };
+		0E4FE1DD512AE1B26FC98AB6 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD37D47076244D72F5FC04C1 /* ProgressBarView.swift */; };
+		0FBFD9F8840E724AA2F08E58 /* NotchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = F69C6F17A207B835816DD639 /* NotchDetector.swift */; };
+		117F443EB5843663CBB29B2F /* DownloadObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBB10CB561C68742EDFE985C /* DownloadObserver.swift */; };
+		1540F6917476805E258DEAFD /* AudioVisualizerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85846F94D1527DBD81533EE5 /* AudioVisualizerView.swift */; };
+		15D37B5F3EA23B0174D2B581 /* NowPlayingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C9E8B306CA962A0273F0D4 /* NowPlayingViewModel.swift */; };
+		1A748A2B02FDA5196F6A7954 /* CoreWLAN.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EB0CF2F0064CFC22D64A9947 /* CoreWLAN.framework */; };
+		2DE9994B635778B9986EB6AF /* ScreenHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7472DEFD8F129F44AD7A4E1E /* ScreenHelper.swift */; };
+		3494A2871FAC92733BC30333 /* MediaControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F97A9DD91EAAB3FFDC0778F /* MediaControlsView.swift */; };
+		34B7A66C79B448AE24B6A134 /* Color+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE526C11A6420F91E6EE50FA /* Color+Extensions.swift */; };
+		35E3DAEAAAA5D70C3EFD4E82 /* DynamicNotchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E71BB7D1F92DF648904044B /* DynamicNotchApp.swift */; };
+		3E3A7DAF960FF0DAF9B880DC /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40392475C4B204F234B1D6B4 /* SettingsView.swift */; };
+		41765938C44CCEB8E8BAE806 /* MarqueeText.swift in Sources */ = {isa = PBXBuildFile; fileRef = 287F38212C90C9C89683F9D1 /* MarqueeText.swift */; };
+		430975548886F4195A23C9B2 /* NotchShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = 846D4CE63FB64E1C7BD8F95B /* NotchShape.swift */; };
+		C10B0C121001000100000002 /* DynamicIslandShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0C121001000100000001 /* DynamicIslandShape.swift */; };
+		44508D84F6B40194DA76A1C0 /* VolumeObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CB2696366BC6A6B1A7394F3 /* VolumeObserver.swift */; };
+		49F4A1E3633F5651DB00419D /* BatteryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 770E9B717568D8831A426670 /* BatteryViewModel.swift */; };
+		4CE676A43C306799B3DF1456 /* NetworkViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911874DAB89A88A206595819 /* NetworkViewModel.swift */; };
+		4E0178D79890F3E2BEE23231 /* TimerObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EB9B11FE60564AEDE5ACE37 /* TimerObserver.swift */; };
+		C10B0B5E2001000100000002 /* ClipboardObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E2001000100000001 /* ClipboardObserver.swift */; };
+		C10B0B5E2001000100000004 /* ClipboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E2001000100000003 /* ClipboardView.swift */; };
+		C10B0B5E2001000100000008 /* ClipboardHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E2001000100000007 /* ClipboardHotKeyManager.swift */; };
+		C10B0B5E3001000100000002 /* LockScreenObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E3001000100000001 /* LockScreenObserver.swift */; };
+		C10B0B5E4001000100000002 /* BrightnessObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E4001000100000001 /* BrightnessObserver.swift */; };
+		C10B0B5E5001000100000002 /* BrightnessHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E5001000100000001 /* BrightnessHUDView.swift */; };
+		C10B0B6E1001000100000002 /* KeyboardBrightnessHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B6E1001000100000001 /* KeyboardBrightnessHUDView.swift */; };
+		C10B0B6E2001000100000002 /* KeyboardBrightnessObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B6E2001000100000001 /* KeyboardBrightnessObserver.swift */; };
+		C10B0B6E3001000100000002 /* KeyboardBrightnessHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B6E3001000100000001 /* KeyboardBrightnessHotKeyManager.swift */; };
+		C10B0B5E7001000100000002 /* AirPodsCardViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E7001000100000001 /* AirPodsCardViewModel.swift */; };
+		C10B0B5E7001000100000004 /* AirPods3DView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E7001000100000003 /* AirPods3DView.swift */; };
+		C10B0B5E7001000100000006 /* AirPodsCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E7001000100000005 /* AirPodsCardView.swift */; };
+		C10B0B5E7001000100000008 /* AirPodsCardWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E7001000100000007 /* AirPodsCardWindowController.swift */; };
+		C10B0B5E700100010000000A /* AirPodsNotchAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E7001000100000009 /* AirPodsNotchAlertView.swift */; };
+		C10B0B5E700100010000000C /* AirPodsVideoPlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E700100010000000B /* AirPodsVideoPlayerView.swift */; };
+		C10B0B5E700100010000000E /* AirPods_Pro_1_Official.mov in Resources */ = {isa = PBXBuildFile; fileRef = C10B0B5E700100010000000D /* AirPods_Pro_1_Official.mov */; };
+		C10B0B5E7001000100000010 /* AirPods_Pro_2_Official.mov in Resources */ = {isa = PBXBuildFile; fileRef = C10B0B5E700100010000000F /* AirPods_Pro_2_Official.mov */; };
+		C10B0B5E8001000100000002 /* SatelliteOrbViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E8001000100000001 /* SatelliteOrbViewModel.swift */; };
+		C10B0B5E8001000100000004 /* SatelliteOrbView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E8001000100000003 /* SatelliteOrbView.swift */; };
+		C10B0B5E8001000100000006 /* SatelliteOrbContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E8001000100000005 /* SatelliteOrbContainerView.swift */; };
+		C10B0B5E8001000100000008 /* SatelliteOrbWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E8001000100000007 /* SatelliteOrbWindowController.swift */; };
+		5162821C86B3647A9FDC5553 /* NotchSizeCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D2666EDD8B2FF13D42D5739 /* NotchSizeCalculator.swift */; };
+		524B15E2F6A0C7606D2A03E4 /* BatteryObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB67A765D43DBE0B7CE95EEF /* BatteryObserver.swift */; };
+		6486877FF6A6DAA360278A5F /* BadgeIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB7A34D958BF6D9F0A515767 /* BadgeIconView.swift */; };
+		65AEEF15C67858ACAC85A186 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C738BB7B584FD2310C5471 /* AppDelegate.swift */; };
+		66DAA870EA3120CEA340E574 /* NetworkObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F7853A8A7DECFB082D74C2B /* NetworkObserver.swift */; };
+		70EC2567A97B718E50B763E1 /* NotchContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21923A641581E51FF7420B74 /* NotchContainer.swift */; };
+		7102DCBC9A4F75498622E93B /* IOBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 50CA7FD5650C9F34D86193DD /* IOBluetooth.framework */; };
+		78A50263975F3E40A1672BB2 /* TimeInterval+Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = E4077832E9635F594139C88F /* TimeInterval+Format.swift */; };
+		7E7B99D8F90EEBAB79F9CCAF /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BFEFD8105824B89D79D05DDD /* IOKit.framework */; };
+		7F1D264960CBCE28F1631B18 /* MediaObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B5DD4224FF60A40241210FE /* MediaObserver.swift */; };
+		801399687385AB78462C5AD6 /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9687A3686B7EFE94B34D04FA /* AppKit.framework */; };
+		833E4BE23687A5BD87F05114 /* TransitionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DD97A62422652F37769AA3C /* TransitionManager.swift */; };
+		83869D755730A55D873C6E2D /* ScreenRecordingObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E504276C8C66FE81F683CE0 /* ScreenRecordingObserver.swift */; };
+		842817E2A8DC4CF6632B7C02 /* NotchWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF5A593288B75474E2C488CC /* NotchWindowController.swift */; };
+		C10B0B5E0000000100000002 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = C10B0B5E0000000100000001 /* AppIcon.icns */; };
+		8A7B8B3196DBE5BD8A39B7DA /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 72D0DA9939A1C148F6A0DF00 /* AudioToolbox.framework */; };
+		8BCF436F49CE9F0930E82C77 /* DownloadViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D92C2B92C9169729F9D9E96 /* DownloadViewModel.swift */; };
+		8ECBBCB80B96DFF58A71DA04 /* NoInternetAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C9C66928A474C7A2DC1CD93 /* NoInternetAlertView.swift */; };
+		9034490252BCD04732DFB050 /* BluetoothViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CC83353EB933E29DB3641E0 /* BluetoothViewModel.swift */; };
+		957CF41FDC5CFAD659C696A5 /* TimerLiveActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34777814F42CD9B71A2F537B /* TimerLiveActivityView.swift */; };
+		C10B0B5E6001000100000002 /* TimerSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E6001000100000001 /* TimerSetupView.swift */; };
+		C10B0B5E6001000100000004 /* TimerHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E6001000100000003 /* TimerHotKeyManager.swift */; };
+		C10B0B5E9001000100000002 /* HideHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5E9001000100000001 /* HideHotKeyManager.swift */; };
+		C10B0B5EA001000100000002 /* ScreenshotObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EA001000100000001 /* ScreenshotObserver.swift */; };
+		C10B0B5EA001000100000004 /* ScreenshotAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EA001000100000003 /* ScreenshotAlertView.swift */; };
+		C10B0B5EB001000100000002 /* ClockTimerSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000001 /* ClockTimerSnapshot.swift */; };
+		C10B0B5EB001000100000004 /* TimerSound.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000003 /* TimerSound.swift */; };
+		C10B0B5EB001000100000006 /* ClockTimerControlling.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000005 /* ClockTimerControlling.swift */; };
+		C10B0B5EB001000100000008 /* ClockTimerMonitoring.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000007 /* ClockTimerMonitoring.swift */; };
+		C10B0B5EB00100010000000A /* ClockTimerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000009 /* ClockTimerController.swift */; };
+		C10B0B5EB00100010000000C /* ClockTimerMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB00100010000000B /* ClockTimerMonitor.swift */; };
+		C10B0B5EB00100010000000E /* TimerSoundPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB00100010000000D /* TimerSoundPlayer.swift */; };
+		C10B0B5EB001000100000010 /* InactiveClockTimerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB00100010000000F /* InactiveClockTimerController.swift */; };
+		C10B0B5EB001000100000012 /* InactiveClockTimerMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000011 /* InactiveClockTimerMonitor.swift */; };
+		C10B0B5EB001000100000014 /* LocalTimerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EB001000100000013 /* LocalTimerViewModel.swift */; };
+		958C6196DD65BF06773C75E6 /* BluetoothAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7B9DB435335449B5BDCE30D /* BluetoothAlertView.swift */; };
+		99B75D52C900D626123A16BE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E7412AE6323F890A5331A7A /* SwiftUI.framework */; };
+		9B1442D0A6C4C34423E41D16 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068DC3DB6BADED228474531C /* SettingsWindowController.swift */; };
+		9F744BDBE22C1A8A44E7B61E /* NotchContentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9FF9D7E275D4C5BF35E685 /* NotchContentRouter.swift */; };
+		AB59A1CB21A7D6C0244C1284 /* VolumeHUDViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABC786AA2A8B164390BF513 /* VolumeHUDViewModel.swift */; };
+		ADE0C4B458CC5D8CE414EF76 /* Combine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C291FD04A804ACA0738B3E7 /* Combine.framework */; };
+		B3152B7A66D808D89E721056 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9CB9CCE284B14B59F0E24BA1 /* Localizable.strings */; };
+		B70255938405ACF23C94F013 /* BatteryAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA0065C3F579D2EE41216986 /* BatteryAlertView.swift */; };
+		B8617C03721DE6E67C84807B /* AlbumArtView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7529A520295C596B8285B73C /* AlbumArtView.swift */; };
+		BA003EDE82E6FEDFB4172032 /* FocusObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26366D100DE8213C35E9649C /* FocusObserver.swift */; };
+		C2429F8E37E29515DDA263B0 /* NetworkAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 686F9F4D3883CF6EC4BDF549 /* NetworkAlertView.swift */; };
+		CC7B7B1E77A7C59AEE79783F /* VolumeHUDView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 930F4B022A0C8EADFB261D3A /* VolumeHUDView.swift */; };
+		D1FCBE52A29F6F33B819E602 /* NSImage+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50205FD564C7A6FA4F76A7F1 /* NSImage+Extensions.swift */; };
+		D4A4B7724803D8C8BA80EC27 /* NowPlayingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E74E3A8C0E6FB1057091804C /* NowPlayingView.swift */; };
+		EBBDB5EAFF642BBD777907A9 /* NotchWindowModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E06D1940379191F528623D /* NotchWindowModel.swift */; };
+		F5532A09645C08749265F910 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E8AA62DC49D1CC20D0EE279 /* CoreBluetooth.framework */; };
+		F71563117C197A4CC865653D /* BluetoothObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A69BEF81C0CC37B467207089 /* BluetoothObserver.swift */; };
+		F85AF15733739E459C6468D5 /* DownloadProgressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0256DEE5CC948BAAE829DEED /* DownloadProgressView.swift */; };
+		FA7F9B0A17867F326962C8F4 /* NotchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954F43B91CBCDBF731F607BB /* NotchViewModel.swift */; };
+		FB5A59DBC1EA5FBB5F497F8D /* SpringConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94AF4B5E9C11DE458C0CD8B1 /* SpringConfig.swift */; };
+		FB7EAC43F296DCFAF3A7F8E6 /* NotchPositionCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1EDEE16FAA162E554E4076 /* NotchPositionCalculator.swift */; };
+		C10B0B5EC001000100000002 /* LyricsModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EC001000100000001 /* LyricsModel.swift */; };
+		C10B0B5EC001000100000004 /* LyricsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EC001000100000003 /* LyricsService.swift */; };
+		C10B0B5EC001000100000006 /* SynchronizedLyricsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EC001000100000005 /* SynchronizedLyricsView.swift */; };
+		C10B0B5EC001000100000008 /* MediaFavoritesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EC001000100000007 /* MediaFavoritesManager.swift */; };
+		C10B0B5EC00100010000000A /* SpotifyAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EC001000100000009 /* SpotifyAPIService.swift */; };
+		C10B0B5EC00100010000000C /* AccessibilityPermissionAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EC00100010000000B /* AccessibilityPermissionAlertView.swift */; };
+		C10B0B5ED001000100000002 /* AudioDeviceModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5ED001000100000001 /* AudioDeviceModel.swift */; };
+		C10B0B5ED001000100000004 /* AudioDeviceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5ED001000100000003 /* AudioDeviceManager.swift */; };
+		C10B0B5ED001000100000006 /* AudioRoutePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5ED001000100000005 /* AudioRoutePickerView.swift */; };
+		C10B0B5EE001000100000002 /* ShelfItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EE001000100000001 /* ShelfItem.swift */; };
+		C10B0B5EE001000100000004 /* ShelfManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EE001000100000003 /* ShelfManager.swift */; };
+		C10B0B5EE001000100000006 /* DragDropMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EE001000100000005 /* DragDropMonitor.swift */; };
+		C10B0B5EE001000100000008 /* ShelfView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EE001000100000007 /* ShelfView.swift */; };
+		C10B0B5EF001000100000002 /* ExternalDriveItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EF001000100000001 /* ExternalDriveItem.swift */; };
+		C10B0B5EF001000100000004 /* ExternalDriveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EF001000100000003 /* ExternalDriveManager.swift */; };
+		C10B0B5EF001000100000006 /* ExternalDriveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EF001000100000005 /* ExternalDriveView.swift */; };
+		C10B0B5EF001000100000008 /* ExternalDriveEjectedAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EF001000100000007 /* ExternalDriveEjectedAlertView.swift */; };
+		C10B0B5EF00100010000000A /* ExternalDriveHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5EF001000100000009 /* ExternalDriveHotKeyManager.swift */; };
+		C10B0BC00001000100000002 /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C10B0BC00001000100000001 /* EventKit.framework */; };
+		C10B0BC01001000100000002 /* CalendarEventItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BC01001000100000001 /* CalendarEventItem.swift */; };
+		C10B0BC01001000100000004 /* CalendarManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BC01001000100000003 /* CalendarManager.swift */; };
+		C10B0BC01001000100000006 /* CalendarEventView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BC01001000100000005 /* CalendarEventView.swift */; };
+		C10B0BC01001000100000008 /* CalendarEventAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BC01001000100000007 /* CalendarEventAlertView.swift */; };
+		C10B0BC0100100010000000A /* CalendarHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BC01001000100000009 /* CalendarHotKeyManager.swift */; };
+		C10B0BD01001000100000002 /* HotspotItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BD01001000100000001 /* HotspotItem.swift */; };
+		C10B0BD01001000100000004 /* HotspotManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BD01001000100000003 /* HotspotManager.swift */; };
+		C10B0BD01001000100000006 /* HotspotCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BD01001000100000005 /* HotspotCardView.swift */; };
+		C10B0BD01001000100000008 /* HotspotAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BD01001000100000007 /* HotspotAlertView.swift */; };
+		C10B0BD0100100010000000A /* HotspotHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BD01001000100000009 /* HotspotHotKeyManager.swift */; };
+		C10B0B5F0001000100000002 /* OnboardingStep.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F0001000100000001 /* OnboardingStep.swift */; };
+		C10B0B5F0001000100000004 /* WelcomeTextShape.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F0001000100000003 /* WelcomeTextShape.swift */; };
+		C10B0B5F0001000100000006 /* WelcomeAnimatedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F0001000100000005 /* WelcomeAnimatedTextView.swift */; };
+		C10B0B5F0001000100000008 /* OnboardingBadgeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F0001000100000007 /* OnboardingBadgeView.swift */; };
+		C10B0B5F000100010000000A /* OnboardingNotchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F0001000100000009 /* OnboardingNotchView.swift */; };
+		C10B0B5F000100010000000C /* NotchOnboardingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F000100010000000B /* NotchOnboardingManager.swift */; };
+		C10B0B5F000100010000000E /* InteractiveShortcutTrainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0B5F000100010000000D /* InteractiveShortcutTrainerView.swift */; };
+		C10B0BE01001000100000002 /* NotesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BE01001000100000001 /* NotesService.swift */; };
+		C10B0BE01001000100000004 /* QuickNoteHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BE01001000100000003 /* QuickNoteHotKeyManager.swift */; };
+		C10B0BE01001000100000006 /* QuickNoteComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BE01001000100000005 /* QuickNoteComposerView.swift */; };
+		C10B0BE01001000100000008 /* QuickNoteSavedAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BE01001000100000007 /* QuickNoteSavedAlertView.swift */; };
+		C10B0BF01001000100000002 /* RemindersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BF01001000100000001 /* RemindersService.swift */; };
+		C10B0BF01001000100000004 /* QuickReminderHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BF01001000100000003 /* QuickReminderHotKeyManager.swift */; };
+		C10B0BF01001000100000006 /* QuickReminderComposerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BF01001000100000005 /* QuickReminderComposerView.swift */; };
+		C10B0BF01001000100000008 /* QuickReminderSavedAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0BF01001000100000007 /* QuickReminderSavedAlertView.swift */; };
+		C10B0C101001000100000002 /* SpotifyPermissionHotKeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C10B0C101001000100000001 /* SpotifyPermissionHotKeyManager.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0256DEE5CC948BAAE829DEED /* DownloadProgressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadProgressView.swift; sourceTree = "<group>"; };
+		068DC3DB6BADED228474531C /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
+		0ABC786AA2A8B164390BF513 /* VolumeHUDViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeHUDViewModel.swift; sourceTree = "<group>"; };
+		0D92C2B92C9169729F9D9E96 /* DownloadViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadViewModel.swift; sourceTree = "<group>"; };
+		16E06D1940379191F528623D /* NotchWindowModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchWindowModel.swift; sourceTree = "<group>"; };
+		1C291FD04A804ACA0738B3E7 /* Combine.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Combine.framework; path = System/Library/Frameworks/Combine.framework; sourceTree = SDKROOT; };
+		1F97A9DD91EAAB3FFDC0778F /* MediaControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaControlsView.swift; sourceTree = "<group>"; };
+		21923A641581E51FF7420B74 /* NotchContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchContainer.swift; sourceTree = "<group>"; };
+		25C9E8B306CA962A0273F0D4 /* NowPlayingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingViewModel.swift; sourceTree = "<group>"; };
+		26366D100DE8213C35E9649C /* FocusObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FocusObserver.swift; sourceTree = "<group>"; };
+		287F38212C90C9C89683F9D1 /* MarqueeText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarqueeText.swift; sourceTree = "<group>"; };
+		34777814F42CD9B71A2F537B /* TimerLiveActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerLiveActivityView.swift; sourceTree = "<group>"; };
+		C10B0B5E6001000100000001 /* TimerSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerSetupView.swift; sourceTree = "<group>"; };
+		C10B0B5E6001000100000003 /* TimerHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0B5E9001000100000001 /* HideHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HideHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0B5EA001000100000001 /* ScreenshotObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotObserver.swift; sourceTree = "<group>"; };
+		C10B0B5EA001000100000003 /* ScreenshotAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotAlertView.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000001 /* ClockTimerSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTimerSnapshot.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000003 /* TimerSound.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerSound.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000005 /* ClockTimerControlling.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTimerControlling.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000007 /* ClockTimerMonitoring.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTimerMonitoring.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000009 /* ClockTimerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTimerController.swift; sourceTree = "<group>"; };
+		C10B0B5EB00100010000000B /* ClockTimerMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClockTimerMonitor.swift; sourceTree = "<group>"; };
+		C10B0B5EB00100010000000D /* TimerSoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerSoundPlayer.swift; sourceTree = "<group>"; };
+		C10B0B5EB00100010000000F /* InactiveClockTimerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InactiveClockTimerController.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000011 /* InactiveClockTimerMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InactiveClockTimerMonitor.swift; sourceTree = "<group>"; };
+		C10B0B5EB001000100000013 /* LocalTimerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTimerViewModel.swift; sourceTree = "<group>"; };
+		C10B0B5E2001000100000001 /* ClipboardObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardObserver.swift; sourceTree = "<group>"; };
+		C10B0B5E2001000100000003 /* ClipboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardView.swift; sourceTree = "<group>"; };
+		C10B0B5E2001000100000007 /* ClipboardHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0B5E3001000100000001 /* LockScreenObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenObserver.swift; sourceTree = "<group>"; };
+		C10B0B5E4001000100000001 /* BrightnessObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessObserver.swift; sourceTree = "<group>"; };
+		C10B0B5E5001000100000001 /* BrightnessHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrightnessHUDView.swift; sourceTree = "<group>"; };
+		C10B0B6E1001000100000001 /* KeyboardBrightnessHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardBrightnessHUDView.swift; sourceTree = "<group>"; };
+		C10B0B6E2001000100000001 /* KeyboardBrightnessObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardBrightnessObserver.swift; sourceTree = "<group>"; };
+		C10B0B6E3001000100000001 /* KeyboardBrightnessHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardBrightnessHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0B5E7001000100000001 /* AirPodsCardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirPodsCardViewModel.swift; sourceTree = "<group>"; };
+		C10B0B5E7001000100000003 /* AirPods3DView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirPods3DView.swift; sourceTree = "<group>"; };
+		C10B0B5E7001000100000005 /* AirPodsCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirPodsCardView.swift; sourceTree = "<group>"; };
+		C10B0B5E7001000100000007 /* AirPodsCardWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirPodsCardWindowController.swift; sourceTree = "<group>"; };
+		C10B0B5E7001000100000009 /* AirPodsNotchAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirPodsNotchAlertView.swift; sourceTree = "<group>"; };
+		C10B0B5E700100010000000B /* AirPodsVideoPlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AirPodsVideoPlayerView.swift; sourceTree = "<group>"; };
+		C10B0B5E700100010000000D /* AirPods_Pro_1_Official.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = AirPods_Pro_1_Official.mov; sourceTree = "<group>"; };
+		C10B0B5E700100010000000F /* AirPods_Pro_2_Official.mov */ = {isa = PBXFileReference; lastKnownFileType = video.quicktime; path = AirPods_Pro_2_Official.mov; sourceTree = "<group>"; };
+		C10B0B5E8001000100000001 /* SatelliteOrbViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteOrbViewModel.swift; sourceTree = "<group>"; };
+		C10B0B5E8001000100000003 /* SatelliteOrbView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteOrbView.swift; sourceTree = "<group>"; };
+		C10B0B5E8001000100000005 /* SatelliteOrbContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteOrbContainerView.swift; sourceTree = "<group>"; };
+		C10B0B5E8001000100000007 /* SatelliteOrbWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteOrbWindowController.swift; sourceTree = "<group>"; };
+		3C9C66928A474C7A2DC1CD93 /* NoInternetAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoInternetAlertView.swift; sourceTree = "<group>"; };
+		3CB2696366BC6A6B1A7394F3 /* VolumeObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeObserver.swift; sourceTree = "<group>"; };
+		3CC83353EB933E29DB3641E0 /* BluetoothViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothViewModel.swift; sourceTree = "<group>"; };
+		3E504276C8C66FE81F683CE0 /* ScreenRecordingObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenRecordingObserver.swift; sourceTree = "<group>"; };
+		3F7853A8A7DECFB082D74C2B /* NetworkObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkObserver.swift; sourceTree = "<group>"; };
+		40392475C4B204F234B1D6B4 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		50205FD564C7A6FA4F76A7F1 /* NSImage+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSImage+Extensions.swift"; sourceTree = "<group>"; };
+		50CA7FD5650C9F34D86193DD /* IOBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOBluetooth.framework; path = System/Library/Frameworks/IOBluetooth.framework; sourceTree = SDKROOT; };
+		5E71BB7D1F92DF648904044B /* DynamicNotchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicNotchApp.swift; sourceTree = "<group>"; };
+		686F9F4D3883CF6EC4BDF549 /* NetworkAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkAlertView.swift; sourceTree = "<group>"; };
+		6EB9B11FE60564AEDE5ACE37 /* TimerObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerObserver.swift; sourceTree = "<group>"; };
+		72D0DA9939A1C148F6A0DF00 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		7472DEFD8F129F44AD7A4E1E /* ScreenHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenHelper.swift; sourceTree = "<group>"; };
+		7529A520295C596B8285B73C /* AlbumArtView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumArtView.swift; sourceTree = "<group>"; };
+		770E9B717568D8831A426670 /* BatteryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryViewModel.swift; sourceTree = "<group>"; };
+		7A8DC18C3B21D8B4D7E7B9AF /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		7C1EDEE16FAA162E554E4076 /* NotchPositionCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchPositionCalculator.swift; sourceTree = "<group>"; };
+		7D2666EDD8B2FF13D42D5739 /* NotchSizeCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchSizeCalculator.swift; sourceTree = "<group>"; };
+		7E7412AE6323F890A5331A7A /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		846D4CE63FB64E1C7BD8F95B /* NotchShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchShape.swift; sourceTree = "<group>"; };
+		C10B0C121001000100000001 /* DynamicIslandShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DynamicIslandShape.swift; sourceTree = "<group>"; };
+		85846F94D1527DBD81533EE5 /* AudioVisualizerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioVisualizerView.swift; sourceTree = "<group>"; };
+		89E03C6B9D99CD8B096E0B02 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C10B0B5E0000000100000001 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
+		8E8AA62DC49D1CC20D0EE279 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
+		911874DAB89A88A206595819 /* NetworkViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkViewModel.swift; sourceTree = "<group>"; };
+		930F4B022A0C8EADFB261D3A /* VolumeHUDView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VolumeHUDView.swift; sourceTree = "<group>"; };
+		94AF4B5E9C11DE458C0CD8B1 /* SpringConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpringConfig.swift; sourceTree = "<group>"; };
+		954F43B91CBCDBF731F607BB /* NotchViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchViewModel.swift; sourceTree = "<group>"; };
+		9687A3686B7EFE94B34D04FA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
+		9B5DD4224FF60A40241210FE /* MediaObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaObserver.swift; sourceTree = "<group>"; };
+		9CB9CCE284B14B59F0E24BA1 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
+		9DD97A62422652F37769AA3C /* TransitionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionManager.swift; sourceTree = "<group>"; };
+		A10EFEE840A6D3BAF3072691 /* NotchState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchState.swift; sourceTree = "<group>"; };
+		A1C738BB7B584FD2310C5471 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		A69BEF81C0CC37B467207089 /* BluetoothObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothObserver.swift; sourceTree = "<group>"; };
+		AB7A34D958BF6D9F0A515767 /* BadgeIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeIconView.swift; sourceTree = "<group>"; };
+		B78DDFFDED9E84CDC5BB489F /* DynamicNotch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = DynamicNotch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B7B9DB435335449B5BDCE30D /* BluetoothAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothAlertView.swift; sourceTree = "<group>"; };
+		BF5A593288B75474E2C488CC /* NotchWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchWindowController.swift; sourceTree = "<group>"; };
+		BF9FF9D7E275D4C5BF35E685 /* NotchContentRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchContentRouter.swift; sourceTree = "<group>"; };
+		BFEFD8105824B89D79D05DDD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		CA0065C3F579D2EE41216986 /* BatteryAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryAlertView.swift; sourceTree = "<group>"; };
+		CFF0F6BE8565E4674E9CE78C /* CircularBatteryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularBatteryView.swift; sourceTree = "<group>"; };
+		DB67A765D43DBE0B7CE95EEF /* BatteryObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryObserver.swift; sourceTree = "<group>"; };
+		E4077832E9635F594139C88F /* TimeInterval+Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimeInterval+Format.swift"; sourceTree = "<group>"; };
+		E74E3A8C0E6FB1057091804C /* NowPlayingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NowPlayingView.swift; sourceTree = "<group>"; };
+		EB0CF2F0064CFC22D64A9947 /* CoreWLAN.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreWLAN.framework; path = System/Library/Frameworks/CoreWLAN.framework; sourceTree = SDKROOT; };
+		EE526C11A6420F91E6EE50FA /* Color+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Extensions.swift"; sourceTree = "<group>"; };
+		F69C6F17A207B835816DD639 /* NotchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchDetector.swift; sourceTree = "<group>"; };
+		F717893C9F6F9062E8ECD55E /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		FBB10CB561C68742EDFE985C /* DownloadObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadObserver.swift; sourceTree = "<group>"; };
+		FD37D47076244D72F5FC04C1 /* ProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
+		C10B0B5EC001000100000001 /* LyricsModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsModel.swift; sourceTree = "<group>"; };
+		C10B0B5EC001000100000003 /* LyricsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LyricsService.swift; sourceTree = "<group>"; };
+		C10B0B5EC001000100000005 /* SynchronizedLyricsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedLyricsView.swift; sourceTree = "<group>"; };
+		C10B0B5EC001000100000007 /* MediaFavoritesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaFavoritesManager.swift; sourceTree = "<group>"; };
+		C10B0B5EC001000100000009 /* SpotifyAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyAPIService.swift; sourceTree = "<group>"; };
+		C10B0B5EC00100010000000B /* AccessibilityPermissionAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityPermissionAlertView.swift; sourceTree = "<group>"; };
+		C10B0B5ED001000100000001 /* AudioDeviceModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceModel.swift; sourceTree = "<group>"; };
+		C10B0B5ED001000100000003 /* AudioDeviceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioDeviceManager.swift; sourceTree = "<group>"; };
+		C10B0B5ED001000100000005 /* AudioRoutePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRoutePickerView.swift; sourceTree = "<group>"; };
+		C10B0B5EE001000100000001 /* ShelfItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfItem.swift; sourceTree = "<group>"; };
+		C10B0B5EE001000100000003 /* ShelfManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfManager.swift; sourceTree = "<group>"; };
+		C10B0B5EE001000100000005 /* DragDropMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DragDropMonitor.swift; sourceTree = "<group>"; };
+		C10B0B5EE001000100000007 /* ShelfView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShelfView.swift; sourceTree = "<group>"; };
+		C10B0B5EF001000100000001 /* ExternalDriveItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDriveItem.swift; sourceTree = "<group>"; };
+		C10B0B5EF001000100000003 /* ExternalDriveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDriveManager.swift; sourceTree = "<group>"; };
+		C10B0B5EF001000100000005 /* ExternalDriveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDriveView.swift; sourceTree = "<group>"; };
+		C10B0B5EF001000100000007 /* ExternalDriveEjectedAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDriveEjectedAlertView.swift; sourceTree = "<group>"; };
+		C10B0B5EF001000100000009 /* ExternalDriveHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalDriveHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0BC00001000100000001 /* EventKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = EventKit.framework; path = System/Library/Frameworks/EventKit.framework; sourceTree = SDKROOT; };
+		C10B0BC01001000100000001 /* CalendarEventItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventItem.swift; sourceTree = "<group>"; };
+		C10B0BC01001000100000003 /* CalendarManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarManager.swift; sourceTree = "<group>"; };
+		C10B0BC01001000100000005 /* CalendarEventView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventView.swift; sourceTree = "<group>"; };
+		C10B0BC01001000100000007 /* CalendarEventAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarEventAlertView.swift; sourceTree = "<group>"; };
+		C10B0BC01001000100000009 /* CalendarHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0BD01001000100000001 /* HotspotItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotItem.swift; sourceTree = "<group>"; };
+		C10B0BD01001000100000003 /* HotspotManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotManager.swift; sourceTree = "<group>"; };
+		C10B0BD01001000100000005 /* HotspotCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotCardView.swift; sourceTree = "<group>"; };
+		C10B0BD01001000100000007 /* HotspotAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotAlertView.swift; sourceTree = "<group>"; };
+		C10B0BD01001000100000009 /* HotspotHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotspotHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0B5F0001000100000001 /* OnboardingStep.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStep.swift; sourceTree = "<group>"; };
+		C10B0B5F0001000100000003 /* WelcomeTextShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeTextShape.swift; sourceTree = "<group>"; };
+		C10B0B5F0001000100000005 /* WelcomeAnimatedTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeAnimatedTextView.swift; sourceTree = "<group>"; };
+		C10B0B5F0001000100000007 /* OnboardingBadgeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingBadgeView.swift; sourceTree = "<group>"; };
+		C10B0B5F0001000100000009 /* OnboardingNotchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingNotchView.swift; sourceTree = "<group>"; };
+		C10B0B5F000100010000000B /* NotchOnboardingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchOnboardingManager.swift; sourceTree = "<group>"; };
+		C10B0B5F000100010000000D /* InteractiveShortcutTrainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InteractiveShortcutTrainerView.swift; sourceTree = "<group>"; };
+		C10B0BE01001000100000001 /* NotesService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotesService.swift; sourceTree = "<group>"; };
+		C10B0BE01001000100000003 /* QuickNoteHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNoteHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0BE01001000100000005 /* QuickNoteComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNoteComposerView.swift; sourceTree = "<group>"; };
+		C10B0BE01001000100000007 /* QuickNoteSavedAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickNoteSavedAlertView.swift; sourceTree = "<group>"; };
+		C10B0BF01001000100000001 /* RemindersService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemindersService.swift; sourceTree = "<group>"; };
+		C10B0BF01001000100000003 /* QuickReminderHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickReminderHotKeyManager.swift; sourceTree = "<group>"; };
+		C10B0BF01001000100000005 /* QuickReminderComposerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickReminderComposerView.swift; sourceTree = "<group>"; };
+		C10B0BF01001000100000007 /* QuickReminderSavedAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickReminderSavedAlertView.swift; sourceTree = "<group>"; };
+		C10B0C101001000100000001 /* SpotifyPermissionHotKeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotifyPermissionHotKeyManager.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B1F195C44F790D84C9B2D58A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				801399687385AB78462C5AD6 /* AppKit.framework in Frameworks */,
+				99B75D52C900D626123A16BE /* SwiftUI.framework in Frameworks */,
+				ADE0C4B458CC5D8CE414EF76 /* Combine.framework in Frameworks */,
+				7E7B99D8F90EEBAB79F9CCAF /* IOKit.framework in Frameworks */,
+				7102DCBC9A4F75498622E93B /* IOBluetooth.framework in Frameworks */,
+				F5532A09645C08749265F910 /* CoreBluetooth.framework in Frameworks */,
+				008A7A59BB6B2BDE2A223401 /* CoreAudio.framework in Frameworks */,
+				8A7B8B3196DBE5BD8A39B7DA /* AudioToolbox.framework in Frameworks */,
+				1A748A2B02FDA5196F6A7954 /* CoreWLAN.framework in Frameworks */,
+				0B191AA9A1C7ABD4CA47F0F5 /* Network.framework in Frameworks */,
+				C10B0BC00001000100000002 /* EventKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		08DAE78A2A77FA527D27DD95 /* NowPlaying */ = {
+			isa = PBXGroup;
+			children = (
+				85846F94D1527DBD81533EE5 /* AudioVisualizerView.swift */,
+				C10B0B5EC001000100000001 /* LyricsModel.swift */,
+				C10B0B5EC001000100000003 /* LyricsService.swift */,
+				1F97A9DD91EAAB3FFDC0778F /* MediaControlsView.swift */,
+				C10B0B5EC001000100000007 /* MediaFavoritesManager.swift */,
+				C10B0B5EC001000100000009 /* SpotifyAPIService.swift */,
+				C10B0B5EC00100010000000B /* AccessibilityPermissionAlertView.swift */,
+				C10B0C101001000100000001 /* SpotifyPermissionHotKeyManager.swift */,
+				E74E3A8C0E6FB1057091804C /* NowPlayingView.swift */,
+				25C9E8B306CA962A0273F0D4 /* NowPlayingViewModel.swift */,
+				C10B0B5EC001000100000005 /* SynchronizedLyricsView.swift */,
+			);
+			path = NowPlaying;
+			sourceTree = "<group>";
+		};
+		18FEED5FEC22CFA0EBF341E7 /* Battery */ = {
+			isa = PBXGroup;
+			children = (
+				CA0065C3F579D2EE41216986 /* BatteryAlertView.swift */,
+				770E9B717568D8831A426670 /* BatteryViewModel.swift */,
+			);
+			path = Battery;
+			sourceTree = "<group>";
+		};
+		3DCCC34AFBDCEFCCA4EB992F /* Bluetooth */ = {
+			isa = PBXGroup;
+			children = (
+				B7B9DB435335449B5BDCE30D /* BluetoothAlertView.swift */,
+				3CC83353EB933E29DB3641E0 /* BluetoothViewModel.swift */,
+			);
+			path = Bluetooth;
+			sourceTree = "<group>";
+		};
+		409B09AC75C98BA6EF6BA254 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				90EC557190FC5C28915EA208 /* Components */,
+				7CFC7D6F607CDB8535E526D6 /* Settings */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		459C086A58EBC1FDE82F7AE0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				9687A3686B7EFE94B34D04FA /* AppKit.framework */,
+				72D0DA9939A1C148F6A0DF00 /* AudioToolbox.framework */,
+				1C291FD04A804ACA0738B3E7 /* Combine.framework */,
+				7A8DC18C3B21D8B4D7E7B9AF /* CoreAudio.framework */,
+				8E8AA62DC49D1CC20D0EE279 /* CoreBluetooth.framework */,
+				EB0CF2F0064CFC22D64A9947 /* CoreWLAN.framework */,
+				50CA7FD5650C9F34D86193DD /* IOBluetooth.framework */,
+				BFEFD8105824B89D79D05DDD /* IOKit.framework */,
+				F717893C9F6F9062E8ECD55E /* Network.framework */,
+				7E7412AE6323F890A5331A7A /* SwiftUI.framework */,
+				C10B0BC00001000100000001 /* EventKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		46175FA145B550F65ABE5A26 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				18FEED5FEC22CFA0EBF341E7 /* Battery */,
+				3DCCC34AFBDCEFCCA4EB992F /* Bluetooth */,
+				C10B0B5E2001000100000005 /* Clipboard */,
+				CA5B287AC938CD74BDE72719 /* Downloads */,
+				924CA649CC5D1BC8070CB39D /* Network */,
+				08DAE78A2A77FA527D27DD95 /* NowPlaying */,
+				7D7C84767F8784C1358ADFBB /* Timer */,
+				863D4E20895D1C1135D92C2C /* VolumeHUD */,
+				C10B0B5E5001000100000003 /* BrightnessHUD */,
+				C10B0B6E0001000100000003 /* KeyboardHUD */,
+				C10B0B5E7001000100000000 /* AirPods */,
+				C10B0B5E8001000100000000 /* SatelliteOrb */,
+				C10B0B5E9001000100000000 /* Shortcuts */,
+				C10B0B5EA001000100000000 /* Screenshot */,
+				C10B0B5ED001000100000000 /* AudioRoute */,
+				C10B0B5EE001000100000000 /* Shelf */,
+				C10B0B5EF001000100000000 /* ExternalDrive */,
+				C10B0BC01001000100000000 /* Calendar */,
+				C10B0BD01001000100000000 /* Hotspot */,
+				C10B0B5F0001000100000000 /* Onboarding */,
+				C10B0BE01001000100000000 /* QuickNote */,
+				C10B0BF01001000100000000 /* QuickReminder */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+		C10B0BE01001000100000000 /* QuickNote */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0BE01001000100000001 /* NotesService.swift */,
+				C10B0BE01001000100000003 /* QuickNoteHotKeyManager.swift */,
+				C10B0BE01001000100000005 /* QuickNoteComposerView.swift */,
+				C10B0BE01001000100000007 /* QuickNoteSavedAlertView.swift */,
+			);
+			path = QuickNote;
+			sourceTree = "<group>";
+		};
+		C10B0BF01001000100000000 /* QuickReminder */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0BF01001000100000001 /* RemindersService.swift */,
+				C10B0BF01001000100000003 /* QuickReminderHotKeyManager.swift */,
+				C10B0BF01001000100000005 /* QuickReminderComposerView.swift */,
+				C10B0BF01001000100000007 /* QuickReminderSavedAlertView.swift */,
+			);
+			path = QuickReminder;
+			sourceTree = "<group>";
+		};
+		C10B0B5F0001000100000000 /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5F0001000100000001 /* OnboardingStep.swift */,
+				C10B0B5F0001000100000003 /* WelcomeTextShape.swift */,
+				C10B0B5F0001000100000005 /* WelcomeAnimatedTextView.swift */,
+				C10B0B5F0001000100000007 /* OnboardingBadgeView.swift */,
+				C10B0B5F0001000100000009 /* OnboardingNotchView.swift */,
+				C10B0B5F000100010000000B /* NotchOnboardingManager.swift */,
+				C10B0B5F000100010000000D /* InteractiveShortcutTrainerView.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
+		C10B0BD01001000100000000 /* Hotspot */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0BD01001000100000001 /* HotspotItem.swift */,
+				C10B0BD01001000100000003 /* HotspotManager.swift */,
+				C10B0BD01001000100000005 /* HotspotCardView.swift */,
+				C10B0BD01001000100000007 /* HotspotAlertView.swift */,
+				C10B0BD01001000100000009 /* HotspotHotKeyManager.swift */,
+			);
+			path = Hotspot;
+			sourceTree = "<group>";
+		};
+		C10B0BC01001000100000000 /* Calendar */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0BC01001000100000001 /* CalendarEventItem.swift */,
+				C10B0BC01001000100000003 /* CalendarManager.swift */,
+				C10B0BC01001000100000005 /* CalendarEventView.swift */,
+				C10B0BC01001000100000007 /* CalendarEventAlertView.swift */,
+				C10B0BC01001000100000009 /* CalendarHotKeyManager.swift */,
+			);
+			path = Calendar;
+			sourceTree = "<group>";
+		};
+		C10B0B5EF001000100000000 /* ExternalDrive */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EF001000100000001 /* ExternalDriveItem.swift */,
+				C10B0B5EF001000100000003 /* ExternalDriveManager.swift */,
+				C10B0B5EF001000100000005 /* ExternalDriveView.swift */,
+				C10B0B5EF001000100000007 /* ExternalDriveEjectedAlertView.swift */,
+				C10B0B5EF001000100000009 /* ExternalDriveHotKeyManager.swift */,
+			);
+			path = ExternalDrive;
+			sourceTree = "<group>";
+		};
+		C10B0B5EE001000100000000 /* Shelf */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EE001000100000001 /* ShelfItem.swift */,
+				C10B0B5EE001000100000003 /* ShelfManager.swift */,
+				C10B0B5EE001000100000005 /* DragDropMonitor.swift */,
+				C10B0B5EE001000100000007 /* ShelfView.swift */,
+			);
+			path = Shelf;
+			sourceTree = "<group>";
+		};
+		C10B0B5ED001000100000000 /* AudioRoute */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5ED001000100000001 /* AudioDeviceModel.swift */,
+				C10B0B5ED001000100000003 /* AudioDeviceManager.swift */,
+				C10B0B5ED001000100000005 /* AudioRoutePickerView.swift */,
+			);
+			path = AudioRoute;
+			sourceTree = "<group>";
+		};
+		C10B0B5EA001000100000000 /* Screenshot */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EA001000100000003 /* ScreenshotAlertView.swift */,
+			);
+			path = Screenshot;
+			sourceTree = "<group>";
+		};
+		C10B0B5E9001000100000000 /* Shortcuts */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E9001000100000001 /* HideHotKeyManager.swift */,
+			);
+			path = Shortcuts;
+			sourceTree = "<group>";
+		};
+		C10B0B5E8001000100000000 /* SatelliteOrb */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E8001000100000001 /* SatelliteOrbViewModel.swift */,
+				C10B0B5E8001000100000003 /* SatelliteOrbView.swift */,
+				C10B0B5E8001000100000005 /* SatelliteOrbContainerView.swift */,
+				C10B0B5E8001000100000007 /* SatelliteOrbWindowController.swift */,
+			);
+			path = SatelliteOrb;
+			sourceTree = "<group>";
+		};
+		C10B0B5E2001000100000005 /* Clipboard */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E2001000100000007 /* ClipboardHotKeyManager.swift */,
+				C10B0B5E2001000100000003 /* ClipboardView.swift */,
+			);
+			path = Clipboard;
+			sourceTree = "<group>";
+		};
+		6CEDD7416366580C87CF40EC /* DynamicNotch */ = {
+			isa = PBXGroup;
+			children = (
+				9D7919E4A4F3FBA730C9E4DA /* App */,
+				E8F7FD884C6EC92D04747179 /* Core */,
+				46175FA145B550F65ABE5A26 /* Features */,
+				ACC37E223CD659036A2EEC3D /* Observers */,
+				DDB771E83700FE2853C2DD3D /* Resources */,
+				409B09AC75C98BA6EF6BA254 /* UI */,
+				D95F369E12FFF50700E4A557 /* Utilities */,
+			);
+			path = DynamicNotch;
+			sourceTree = "<group>";
+		};
+		7CFC7D6F607CDB8535E526D6 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				40392475C4B204F234B1D6B4 /* SettingsView.swift */,
+				068DC3DB6BADED228474531C /* SettingsWindowController.swift */,
+			);
+			path = Settings;
+			sourceTree = "<group>";
+		};
+		7D7C84767F8784C1358ADFBB /* Timer */ = {
+			isa = PBXGroup;
+			children = (
+				34777814F42CD9B71A2F537B /* TimerLiveActivityView.swift */,
+				C10B0B5E6001000100000001 /* TimerSetupView.swift */,
+				C10B0B5E6001000100000003 /* TimerHotKeyManager.swift */,
+				C10B0B5EB001000100000021 /* Models */,
+				C10B0B5EB001000100000022 /* Protocols */,
+				C10B0B5EB001000100000023 /* Services */,
+				C10B0B5EB001000100000024 /* ViewModels */,
+			);
+			path = Timer;
+			sourceTree = "<group>";
+		};
+		C10B0B5EB001000100000021 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EB001000100000001 /* ClockTimerSnapshot.swift */,
+				C10B0B5EB001000100000003 /* TimerSound.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		C10B0B5EB001000100000022 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EB001000100000005 /* ClockTimerControlling.swift */,
+				C10B0B5EB001000100000007 /* ClockTimerMonitoring.swift */,
+			);
+			path = Protocols;
+			sourceTree = "<group>";
+		};
+		C10B0B5EB001000100000023 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EB001000100000009 /* ClockTimerController.swift */,
+				C10B0B5EB00100010000000B /* ClockTimerMonitor.swift */,
+				C10B0B5EB00100010000000D /* TimerSoundPlayer.swift */,
+				C10B0B5EB00100010000000F /* InactiveClockTimerController.swift */,
+				C10B0B5EB001000100000011 /* InactiveClockTimerMonitor.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		C10B0B5EB001000100000024 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5EB001000100000013 /* LocalTimerViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		863D4E20895D1C1135D92C2C /* VolumeHUD */ = {
+			isa = PBXGroup;
+			children = (
+				930F4B022A0C8EADFB261D3A /* VolumeHUDView.swift */,
+				0ABC786AA2A8B164390BF513 /* VolumeHUDViewModel.swift */,
+			);
+			path = VolumeHUD;
+			sourceTree = "<group>";
+		};
+		C10B0B5E5001000100000003 /* BrightnessHUD */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E5001000100000001 /* BrightnessHUDView.swift */,
+			);
+			path = BrightnessHUD;
+			sourceTree = "<group>";
+		};
+		C10B0B6E0001000100000003 /* KeyboardHUD */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B6E1001000100000001 /* KeyboardBrightnessHUDView.swift */,
+				C10B0B6E3001000100000001 /* KeyboardBrightnessHotKeyManager.swift */,
+			);
+			path = KeyboardHUD;
+			sourceTree = "<group>";
+		};
+		C10B0B5E7001000100000000 /* AirPods */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E7001000100000001 /* AirPodsCardViewModel.swift */,
+				C10B0B5E7001000100000003 /* AirPods3DView.swift */,
+				C10B0B5E7001000100000005 /* AirPodsCardView.swift */,
+				C10B0B5E7001000100000007 /* AirPodsCardWindowController.swift */,
+				C10B0B5E7001000100000009 /* AirPodsNotchAlertView.swift */,
+				C10B0B5E700100010000000B /* AirPodsVideoPlayerView.swift */,
+			);
+			path = AirPods;
+			sourceTree = "<group>";
+		};
+		90EC557190FC5C28915EA208 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				7529A520295C596B8285B73C /* AlbumArtView.swift */,
+				AB7A34D958BF6D9F0A515767 /* BadgeIconView.swift */,
+				CFF0F6BE8565E4674E9CE78C /* CircularBatteryView.swift */,
+				287F38212C90C9C89683F9D1 /* MarqueeText.swift */,
+				21923A641581E51FF7420B74 /* NotchContainer.swift */,
+				FD37D47076244D72F5FC04C1 /* ProgressBarView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		924CA649CC5D1BC8070CB39D /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				686F9F4D3883CF6EC4BDF549 /* NetworkAlertView.swift */,
+				911874DAB89A88A206595819 /* NetworkViewModel.swift */,
+				3C9C66928A474C7A2DC1CD93 /* NoInternetAlertView.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+		9D7919E4A4F3FBA730C9E4DA /* App */ = {
+			isa = PBXGroup;
+			children = (
+				A1C738BB7B584FD2310C5471 /* AppDelegate.swift */,
+				5E71BB7D1F92DF648904044B /* DynamicNotchApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		ACC37E223CD659036A2EEC3D /* Observers */ = {
+			isa = PBXGroup;
+			children = (
+				DB67A765D43DBE0B7CE95EEF /* BatteryObserver.swift */,
+				A69BEF81C0CC37B467207089 /* BluetoothObserver.swift */,
+				FBB10CB561C68742EDFE985C /* DownloadObserver.swift */,
+				C10B0B5E2001000100000001 /* ClipboardObserver.swift */,
+				C10B0B5E3001000100000001 /* LockScreenObserver.swift */,
+				C10B0B5E4001000100000001 /* BrightnessObserver.swift */,
+				C10B0B6E2001000100000001 /* KeyboardBrightnessObserver.swift */,
+				26366D100DE8213C35E9649C /* FocusObserver.swift */,
+				9B5DD4224FF60A40241210FE /* MediaObserver.swift */,
+				3F7853A8A7DECFB082D74C2B /* NetworkObserver.swift */,
+				3E504276C8C66FE81F683CE0 /* ScreenRecordingObserver.swift */,
+				6EB9B11FE60564AEDE5ACE37 /* TimerObserver.swift */,
+				3CB2696366BC6A6B1A7394F3 /* VolumeObserver.swift */,
+				C10B0B5EA001000100000001 /* ScreenshotObserver.swift */,
+			);
+			path = Observers;
+			sourceTree = "<group>";
+		};
+		B4CDF201441F1596CA760C85 /* Notch */ = {
+			isa = PBXGroup;
+			children = (
+				BF9FF9D7E275D4C5BF35E685 /* NotchContentRouter.swift */,
+				A10EFEE840A6D3BAF3072691 /* NotchState.swift */,
+				954F43B91CBCDBF731F607BB /* NotchViewModel.swift */,
+			);
+			path = Notch;
+			sourceTree = "<group>";
+		};
+		C0C1BE8A8333D4CE7D34EC87 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B78DDFFDED9E84CDC5BB489F /* DynamicNotch.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C438C5B3F873CF89418B945F /* Window */ = {
+			isa = PBXGroup;
+			children = (
+				7C1EDEE16FAA162E554E4076 /* NotchPositionCalculator.swift */,
+				7D2666EDD8B2FF13D42D5739 /* NotchSizeCalculator.swift */,
+				BF5A593288B75474E2C488CC /* NotchWindowController.swift */,
+				16E06D1940379191F528623D /* NotchWindowModel.swift */,
+			);
+			path = Window;
+			sourceTree = "<group>";
+		};
+		CA5B287AC938CD74BDE72719 /* Downloads */ = {
+			isa = PBXGroup;
+			children = (
+				0256DEE5CC948BAAE829DEED /* DownloadProgressView.swift */,
+				0D92C2B92C9169729F9D9E96 /* DownloadViewModel.swift */,
+			);
+			path = Downloads;
+			sourceTree = "<group>";
+		};
+		D95F369E12FFF50700E4A557 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				F69C6F17A207B835816DD639 /* NotchDetector.swift */,
+				7472DEFD8F129F44AD7A4E1E /* ScreenHelper.swift */,
+				F693FAF3B340D156EE566EB7 /* Extensions */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		C10B0B5E7001000100000011 /* Media */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E700100010000000D /* AirPods_Pro_1_Official.mov */,
+				C10B0B5E700100010000000F /* AirPods_Pro_2_Official.mov */,
+			);
+			path = Media;
+			sourceTree = "<group>";
+		};
+		DDB771E83700FE2853C2DD3D /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				C10B0B5E0000000100000001 /* AppIcon.icns */,
+				89E03C6B9D99CD8B096E0B02 /* Assets.xcassets */,
+				9CB9CCE284B14B59F0E24BA1 /* Localizable.strings */,
+				C10B0B5E7001000100000011 /* Media */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		E0F7782143DC1A54A1984EEA = {
+			isa = PBXGroup;
+			children = (
+				6CEDD7416366580C87CF40EC /* DynamicNotch */,
+				459C086A58EBC1FDE82F7AE0 /* Frameworks */,
+				C0C1BE8A8333D4CE7D34EC87 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		E8F7FD884C6EC92D04747179 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				ED755C07ED2A1DD79E7DCA74 /* Animation */,
+				B4CDF201441F1596CA760C85 /* Notch */,
+				C438C5B3F873CF89418B945F /* Window */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		ED755C07ED2A1DD79E7DCA74 /* Animation */ = {
+			isa = PBXGroup;
+			children = (
+				846D4CE63FB64E1C7BD8F95B /* NotchShape.swift */,
+				C10B0C121001000100000001 /* DynamicIslandShape.swift */,
+				94AF4B5E9C11DE458C0CD8B1 /* SpringConfig.swift */,
+				9DD97A62422652F37769AA3C /* TransitionManager.swift */,
+			);
+			path = Animation;
+			sourceTree = "<group>";
+		};
+		F693FAF3B340D156EE566EB7 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				EE526C11A6420F91E6EE50FA /* Color+Extensions.swift */,
+				50205FD564C7A6FA4F76A7F1 /* NSImage+Extensions.swift */,
+				E4077832E9635F594139C88F /* TimeInterval+Format.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		045D56EFD0E05CBA240CB0FA /* DynamicNotch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2D07C08B27C3C7ED82EE77FD /* Build configuration list for PBXNativeTarget "DynamicNotch" */;
+			buildPhases = (
+				9A569AC6B563DE90F47AC774 /* Sources */,
+				7E4D937A8E9878BCAA2515E2 /* Resources */,
+				B1F195C44F790D84C9B2D58A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = DynamicNotch;
+			packageProductDependencies = (
+			);
+			productName = DynamicNotch;
+			productReference = B78DDFFDED9E84CDC5BB489F /* DynamicNotch.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3524B578130C9485EA9DF14D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1620;
+				TargetAttributes = {
+					045D56EFD0E05CBA240CB0FA = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 7ABB6FEA51AF79463B36F521 /* Build configuration list for PBXProject "DynamicNotch" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = E0F7782143DC1A54A1984EEA;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = C0C1BE8A8333D4CE7D34EC87 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				045D56EFD0E05CBA240CB0FA /* DynamicNotch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7E4D937A8E9878BCAA2515E2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C10B0B5E0000000100000002 /* AppIcon.icns in Resources */,
+				B3152B7A66D808D89E721056 /* Localizable.strings in Resources */,
+				C10B0B5E700100010000000E /* AirPods_Pro_1_Official.mov in Resources */,
+				C10B0B5E7001000100000010 /* AirPods_Pro_2_Official.mov in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9A569AC6B563DE90F47AC774 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8617C03721DE6E67C84807B /* AlbumArtView.swift in Sources */,
+				65AEEF15C67858ACAC85A186 /* AppDelegate.swift in Sources */,
+				1540F6917476805E258DEAFD /* AudioVisualizerView.swift in Sources */,
+				6486877FF6A6DAA360278A5F /* BadgeIconView.swift in Sources */,
+				B70255938405ACF23C94F013 /* BatteryAlertView.swift in Sources */,
+				524B15E2F6A0C7606D2A03E4 /* BatteryObserver.swift in Sources */,
+				49F4A1E3633F5651DB00419D /* BatteryViewModel.swift in Sources */,
+				958C6196DD65BF06773C75E6 /* BluetoothAlertView.swift in Sources */,
+				F71563117C197A4CC865653D /* BluetoothObserver.swift in Sources */,
+				9034490252BCD04732DFB050 /* BluetoothViewModel.swift in Sources */,
+				0652AAFE37C40E26566095D8 /* CircularBatteryView.swift in Sources */,
+				C10B0B5E2001000100000002 /* ClipboardObserver.swift in Sources */,
+				C10B0B5E2001000100000004 /* ClipboardView.swift in Sources */,
+				C10B0B5E2001000100000008 /* ClipboardHotKeyManager.swift in Sources */,
+				C10B0B5E3001000100000002 /* LockScreenObserver.swift in Sources */,
+				34B7A66C79B448AE24B6A134 /* Color+Extensions.swift in Sources */,
+				117F443EB5843663CBB29B2F /* DownloadObserver.swift in Sources */,
+				F85AF15733739E459C6468D5 /* DownloadProgressView.swift in Sources */,
+				8BCF436F49CE9F0930E82C77 /* DownloadViewModel.swift in Sources */,
+				35E3DAEAAAA5D70C3EFD4E82 /* DynamicNotchApp.swift in Sources */,
+				BA003EDE82E6FEDFB4172032 /* FocusObserver.swift in Sources */,
+				41765938C44CCEB8E8BAE806 /* MarqueeText.swift in Sources */,
+				3494A2871FAC92733BC30333 /* MediaControlsView.swift in Sources */,
+				7F1D264960CBCE28F1631B18 /* MediaObserver.swift in Sources */,
+				D1FCBE52A29F6F33B819E602 /* NSImage+Extensions.swift in Sources */,
+				C2429F8E37E29515DDA263B0 /* NetworkAlertView.swift in Sources */,
+				66DAA870EA3120CEA340E574 /* NetworkObserver.swift in Sources */,
+				4CE676A43C306799B3DF1456 /* NetworkViewModel.swift in Sources */,
+				8ECBBCB80B96DFF58A71DA04 /* NoInternetAlertView.swift in Sources */,
+				70EC2567A97B718E50B763E1 /* NotchContainer.swift in Sources */,
+				9F744BDBE22C1A8A44E7B61E /* NotchContentRouter.swift in Sources */,
+				0FBFD9F8840E724AA2F08E58 /* NotchDetector.swift in Sources */,
+				FB7EAC43F296DCFAF3A7F8E6 /* NotchPositionCalculator.swift in Sources */,
+				430975548886F4195A23C9B2 /* NotchShape.swift in Sources */,
+				C10B0C121001000100000002 /* DynamicIslandShape.swift in Sources */,
+				5162821C86B3647A9FDC5553 /* NotchSizeCalculator.swift in Sources */,
+				0D2884DDE18CE259FAF34F74 /* NotchState.swift in Sources */,
+				FA7F9B0A17867F326962C8F4 /* NotchViewModel.swift in Sources */,
+				842817E2A8DC4CF6632B7C02 /* NotchWindowController.swift in Sources */,
+				EBBDB5EAFF642BBD777907A9 /* NotchWindowModel.swift in Sources */,
+				D4A4B7724803D8C8BA80EC27 /* NowPlayingView.swift in Sources */,
+				15D37B5F3EA23B0174D2B581 /* NowPlayingViewModel.swift in Sources */,
+				C10B0B5EC001000100000008 /* MediaFavoritesManager.swift in Sources */,
+				C10B0B5EC00100010000000A /* SpotifyAPIService.swift in Sources */,
+				C10B0B5EC00100010000000C /* AccessibilityPermissionAlertView.swift in Sources */,
+				C10B0C101001000100000002 /* SpotifyPermissionHotKeyManager.swift in Sources */,
+				C10B0B5EC001000100000002 /* LyricsModel.swift in Sources */,
+				C10B0B5EC001000100000004 /* LyricsService.swift in Sources */,
+				C10B0B5EC001000100000006 /* SynchronizedLyricsView.swift in Sources */,
+				0E4FE1DD512AE1B26FC98AB6 /* ProgressBarView.swift in Sources */,
+				2DE9994B635778B9986EB6AF /* ScreenHelper.swift in Sources */,
+				83869D755730A55D873C6E2D /* ScreenRecordingObserver.swift in Sources */,
+				3E3A7DAF960FF0DAF9B880DC /* SettingsView.swift in Sources */,
+				9B1442D0A6C4C34423E41D16 /* SettingsWindowController.swift in Sources */,
+				FB5A59DBC1EA5FBB5F497F8D /* SpringConfig.swift in Sources */,
+				78A50263975F3E40A1672BB2 /* TimeInterval+Format.swift in Sources */,
+				957CF41FDC5CFAD659C696A5 /* TimerLiveActivityView.swift in Sources */,
+				C10B0B5E6001000100000002 /* TimerSetupView.swift in Sources */,
+				C10B0B5E6001000100000004 /* TimerHotKeyManager.swift in Sources */,
+				C10B0B5E9001000100000002 /* HideHotKeyManager.swift in Sources */,
+				C10B0B5EA001000100000002 /* ScreenshotObserver.swift in Sources */,
+				C10B0B5EA001000100000004 /* ScreenshotAlertView.swift in Sources */,
+				4E0178D79890F3E2BEE23231 /* TimerObserver.swift in Sources */,
+				C10B0B5EB001000100000002 /* ClockTimerSnapshot.swift in Sources */,
+				C10B0B5EB001000100000004 /* TimerSound.swift in Sources */,
+				C10B0B5EB001000100000006 /* ClockTimerControlling.swift in Sources */,
+				C10B0B5EB001000100000008 /* ClockTimerMonitoring.swift in Sources */,
+				C10B0B5EB00100010000000A /* ClockTimerController.swift in Sources */,
+				C10B0B5EB00100010000000C /* ClockTimerMonitor.swift in Sources */,
+				C10B0B5EB00100010000000E /* TimerSoundPlayer.swift in Sources */,
+				C10B0B5EB001000100000010 /* InactiveClockTimerController.swift in Sources */,
+				C10B0B5EB001000100000012 /* InactiveClockTimerMonitor.swift in Sources */,
+				C10B0B5EB001000100000014 /* LocalTimerViewModel.swift in Sources */,
+				833E4BE23687A5BD87F05114 /* TransitionManager.swift in Sources */,
+				CC7B7B1E77A7C59AEE79783F /* VolumeHUDView.swift in Sources */,
+				AB59A1CB21A7D6C0244C1284 /* VolumeHUDViewModel.swift in Sources */,
+				44508D84F6B40194DA76A1C0 /* VolumeObserver.swift in Sources */,
+				C10B0B5E4001000100000002 /* BrightnessObserver.swift in Sources */,
+				C10B0B5E5001000100000002 /* BrightnessHUDView.swift in Sources */,
+				C10B0B6E1001000100000002 /* KeyboardBrightnessHUDView.swift in Sources */,
+				C10B0B6E2001000100000002 /* KeyboardBrightnessObserver.swift in Sources */,
+				C10B0B6E3001000100000002 /* KeyboardBrightnessHotKeyManager.swift in Sources */,
+				C10B0B5E7001000100000002 /* AirPodsCardViewModel.swift in Sources */,
+				C10B0B5E7001000100000004 /* AirPods3DView.swift in Sources */,
+				C10B0B5E7001000100000006 /* AirPodsCardView.swift in Sources */,
+				C10B0B5E7001000100000008 /* AirPodsCardWindowController.swift in Sources */,
+				C10B0B5E700100010000000A /* AirPodsNotchAlertView.swift in Sources */,
+				C10B0B5E700100010000000C /* AirPodsVideoPlayerView.swift in Sources */,
+				C10B0B5E8001000100000002 /* SatelliteOrbViewModel.swift in Sources */,
+				C10B0B5E8001000100000004 /* SatelliteOrbView.swift in Sources */,
+				C10B0B5E8001000100000006 /* SatelliteOrbContainerView.swift in Sources */,
+				C10B0B5E8001000100000008 /* SatelliteOrbWindowController.swift in Sources */,
+				C10B0B5ED001000100000002 /* AudioDeviceModel.swift in Sources */,
+				C10B0B5ED001000100000004 /* AudioDeviceManager.swift in Sources */,
+				C10B0B5ED001000100000006 /* AudioRoutePickerView.swift in Sources */,
+				C10B0B5EE001000100000002 /* ShelfItem.swift in Sources */,
+				C10B0B5EE001000100000004 /* ShelfManager.swift in Sources */,
+				C10B0B5EE001000100000006 /* DragDropMonitor.swift in Sources */,
+				C10B0B5EE001000100000008 /* ShelfView.swift in Sources */,
+				C10B0B5EF001000100000002 /* ExternalDriveItem.swift in Sources */,
+				C10B0B5EF001000100000004 /* ExternalDriveManager.swift in Sources */,
+				C10B0B5EF001000100000006 /* ExternalDriveView.swift in Sources */,
+				C10B0B5EF001000100000008 /* ExternalDriveEjectedAlertView.swift in Sources */,
+				C10B0B5EF00100010000000A /* ExternalDriveHotKeyManager.swift in Sources */,
+				C10B0BC01001000100000002 /* CalendarEventItem.swift in Sources */,
+				C10B0BC01001000100000004 /* CalendarManager.swift in Sources */,
+				C10B0BC01001000100000006 /* CalendarEventView.swift in Sources */,
+				C10B0BC01001000100000008 /* CalendarEventAlertView.swift in Sources */,
+				C10B0BC0100100010000000A /* CalendarHotKeyManager.swift in Sources */,
+				C10B0BD01001000100000002 /* HotspotItem.swift in Sources */,
+				C10B0BD01001000100000004 /* HotspotManager.swift in Sources */,
+				C10B0BD01001000100000006 /* HotspotCardView.swift in Sources */,
+				C10B0BD01001000100000008 /* HotspotAlertView.swift in Sources */,
+				C10B0BD0100100010000000A /* HotspotHotKeyManager.swift in Sources */,
+				C10B0B5F0001000100000002 /* OnboardingStep.swift in Sources */,
+				C10B0B5F0001000100000004 /* WelcomeTextShape.swift in Sources */,
+				C10B0B5F0001000100000006 /* WelcomeAnimatedTextView.swift in Sources */,
+				C10B0B5F0001000100000008 /* OnboardingBadgeView.swift in Sources */,
+				C10B0B5F000100010000000A /* OnboardingNotchView.swift in Sources */,
+				C10B0B5F000100010000000C /* NotchOnboardingManager.swift in Sources */,
+				C10B0B5F000100010000000E /* InteractiveShortcutTrainerView.swift in Sources */,
+				C10B0BE01001000100000002 /* NotesService.swift in Sources */,
+				C10B0BE01001000100000004 /* QuickNoteHotKeyManager.swift in Sources */,
+				C10B0BE01001000100000006 /* QuickNoteComposerView.swift in Sources */,
+				C10B0BE01001000100000008 /* QuickNoteSavedAlertView.swift in Sources */,
+				C10B0BF01001000100000002 /* RemindersService.swift in Sources */,
+				C10B0BF01001000100000004 /* QuickReminderHotKeyManager.swift in Sources */,
+				C10B0BF01001000100000006 /* QuickReminderComposerView.swift in Sources */,
+				C10B0BF01001000100000008 /* QuickReminderSavedAlertView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3DC9CF3F7B67432FA6889F8B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		9E8E48CFE9159F96092F2377 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DynamicNotch/DynamicNotch.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DynamicNotch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				OTHER_CODE_SIGN_FLAGS = "--requirements '=designated => identifier \"com.local.dynamicnotch\"'";
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.dynamicnotch;
+				PRODUCT_NAME = DynamicNotch;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		DD545EDEEBF3AC122FCFF22F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = DynamicNotch/DynamicNotch.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = DynamicNotch/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				OTHER_CODE_SIGN_FLAGS = "--requirements '=designated => identifier \"com.local.dynamicnotch\"'";
+				PRODUCT_BUNDLE_IDENTIFIER = com.local.dynamicnotch;
+				PRODUCT_NAME = DynamicNotch;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		FF8E1AB094EB59F9DAFFBF77 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2D07C08B27C3C7ED82EE77FD /* Build configuration list for PBXNativeTarget "DynamicNotch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD545EDEEBF3AC122FCFF22F /* Debug */,
+				9E8E48CFE9159F96092F2377 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7ABB6FEA51AF79463B36F521 /* Build configuration list for PBXProject "DynamicNotch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FF8E1AB094EB59F9DAFFBF77 /* Debug */,
+				3DC9CF3F7B67432FA6889F8B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 3524B578130C9485EA9DF14D /* Project object */;
+}

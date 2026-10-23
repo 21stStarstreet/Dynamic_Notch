@@ -1,0 +1,64 @@
+name: DynamicNotch
+options:
+  bundleIdPrefix: com.local
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+    ENABLE_HARDENED_RUNTIME: NO
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "-"
+    GENERATE_INFOPLIST_FILE: NO
+
+targets:
+  DynamicNotch:
+    type: application
+    platform: macOS
+    deploymentTarget: "14.0"
+    sources:
+      - path: DynamicNotch
+        excludes:
+          - "Info.plist"
+          - "DynamicNotch.entitlements"
+    info:
+      path: DynamicNotch/Info.plist
+      properties:
+        LSUIElement: true
+        NSHighResolutionCapable: true
+        NSBluetoothAlwaysUsageDescription: "Bluetooth cihazlarının bağlantı ve kopma bildirimlerini DynamicNotch üzerinde göstermek için gereklidir."
+        NSBluetoothPeripheralUsageDescription: "Bluetooth cihazlarının bağlantı durumunu DynamicNotch üzerinde göstermek için gereklidir."
+        NSMicrophoneUsageDescription: "Ses görselleştirici efektini çalıştırmak için gereklidir."
+        NSAppleEventsUsageDescription: "Spotify ve Apple Music medya bilgilerini DynamicNotch üzerinde göstermek için gereklidir."
+        NSLocationUsageDescription: "Bağlı olunan Wi-Fi ağ adını (SSID) göstermek için gereklidir."
+        NSLocationWhenInUseUsageDescription: "Bağlı olunan Wi-Fi ağ adını (SSID) göstermek için gereklidir."
+    entitlements:
+      path: DynamicNotch/DynamicNotch.entitlements
+      properties:
+        com.apple.security.app-sandbox: false
+        com.apple.security.automation.apple-events: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.local.dynamicnotch
+        PRODUCT_NAME: DynamicNotch
+        INFOPLIST_FILE: DynamicNotch/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+        CODE_SIGN_ENTITLEMENTS: DynamicNotch/DynamicNotch.entitlements
+        ENABLE_APP_SANDBOX: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        COMBINE_HIDPI_IMAGES: YES
+    dependencies:
+      - sdk: AppKit.framework
+      - sdk: SwiftUI.framework
+      - sdk: Combine.framework
+      - sdk: IOKit.framework
+      - sdk: IOBluetooth.framework
+      - sdk: CoreBluetooth.framework
+      - sdk: CoreAudio.framework
+      - sdk: AudioToolbox.framework
+      - sdk: CoreWLAN.framework
+      - sdk: Network.framework

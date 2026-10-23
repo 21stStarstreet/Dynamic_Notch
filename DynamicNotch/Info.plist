@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>$(PRODUCT_NAME)</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.8.16</string>
+	<key>CFBundleVersion</key>
+	<string>1.8.16</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>tr</string>
+		<string>en</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.mustafatiras.DynamicNotch</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>dynamicnotch</string>
+			</array>
+		</dict>
+	</array>
+	<key>LSUIElement</key>
+	<true/>
+	<key>NSAppleEventsUsageDescription</key>
+	<string>Spotify ve Apple Music medya bilgilerini göstermek ve Apple Notlar uygulamasına hızlı not kaydetmek için gereklidir.</string>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>Bluetooth cihazlarının bağlantı ve kopma bildirimlerini DynamicNotch üzerinde göstermek için gereklidir.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth cihazlarının bağlantı durumunu DynamicNotch üzerinde göstermek için gereklidir.</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSLocationUsageDescription</key>
+	<string>Bağlı olunan Wi-Fi ağ adını (SSID) göstermek için gereklidir.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Bağlı olunan Wi-Fi ağ adını (SSID) göstermek için gereklidir.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Ses görselleştirici efektini çalıştırmak için gereklidir.</string>
+	<key>NSDesktopFolderUsageDescription</key>
+	<string>Ekran görüntülerini DynamicNotch üzerinde anında önizlemek ve paylaşım seçeneklerini sunmak için gereklidir.</string>
+	<key>NSDocumentsFolderUsageDescription</key>
+	<string>Belgeler klasöründeki ekran görüntülerini DynamicNotch üzerinde önizlemek ve paylaşmak için gereklidir.</string>
+	<key>NSDownloadsFolderUsageDescription</key>
+	<string>İndirilenler klasöründeki ekran görüntülerini DynamicNotch üzerinde önizlemek ve paylaşmak için gereklidir.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Yaklaşan toplantıları ve etkinlikleri DynamicNotch üzerinde akıllı bildirim ve tek tıkla katılım kartı olarak göstermek için gereklidir.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Yaklaşan toplantıları ve etkinlikleri DynamicNotch üzerinde akıllı bildirim ve tek tıkla katılım kartı olarak göstermek için gereklidir.</string>
+	<key>NSRemindersUsageDescription</key>
+	<string>DynamicNotch üzerinden hızlı anımsatıcı ekleyebilmeniz ve Apple Anımsatıcılar ile eşzamanlayabilmeniz için gereklidir.</string>
+	<key>NSRemindersFullAccessUsageDescription</key>
+	<string>DynamicNotch üzerinden hızlı anımsatıcı ekleyebilmeniz ve Apple Anımsatıcılar ile eşzamanlayabilmeniz için gereklidir.</string>
+</dict>
+</plist>
