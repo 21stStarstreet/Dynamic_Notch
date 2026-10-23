@@ -5,6 +5,7 @@
 // the notch is expanded (either via mouse hover or a transient Alert).
 
 import SwiftUI
+import AVFoundation
 
 struct NotchContentRouter: View {
 
@@ -256,6 +257,11 @@ struct NotchContentRouter: View {
         case .emptySquareMenu:
             SquareActionMenuView(viewModel: viewModel)
 
+        case .cameraMirror:
+            CameraMirrorView(onDismiss: { [weak viewModel] in
+                viewModel?.dismissCurrentAlert()
+            })
+
         case .welcomeGreeting:
             WelcomeAnimatedTextView(
                 isSingleRound: true,
@@ -368,18 +374,309 @@ struct AppleSoundSymbolView: View {
     }
 }
 
-// MARK: - Quick Action Menu View (Proportionally Spaced Apple Action Dock)
+struct AppleClipboardSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.18, green: 0.72, blue: 0.94),
+                            Color(red: 0.02, green: 0.48, blue: 0.98)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+                )
+
+            Image(systemName: "doc.on.clipboard.fill")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+struct AppleTimerSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 1.0, green: 0.60, blue: 0.0),
+                            Color(red: 0.96, green: 0.38, blue: 0.0)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.25), lineWidth: 0.5)
+                )
+
+            Image(systemName: "timer")
+                .font(.system(size: 21, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - Phase 3-7 Apple Symbol Views
+
+struct AppleScreenshotSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.69, green: 0.32, blue: 0.87),
+                            Color(red: 0.35, green: 0.34, blue: 0.84)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.5)
+                )
+
+            Image(systemName: "camera.viewfinder")
+                .font(.system(size: 21, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+struct AppleMirrorSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.20, green: 0.78, blue: 0.35),
+                            Color(red: 0.19, green: 0.69, blue: 0.78)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.5)
+                )
+
+            Image(systemName: "video.fill")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+struct AppleFocusSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.35, green: 0.34, blue: 0.84),
+                            Color(red: 0.21, green: 0.20, blue: 0.64)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.5)
+                )
+
+            Image(systemName: "moon.fill")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+struct AppleEjectSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.28, green: 0.28, blue: 0.30),
+                            Color(red: 0.17, green: 0.17, blue: 0.18)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.22), lineWidth: 0.5)
+                )
+
+            Image(systemName: "eject.fill")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+struct AppleCalendarSymbolView: View {
+    private var dayString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter.string(from: Date())
+    }
+
+    private var weekdayString: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "tr_TR")
+        formatter.dateFormat = "EEE"
+        return formatter.string(from: Date()).uppercased()
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(Color(white: 0.96))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.35), lineWidth: 0.5)
+                )
+
+            VStack(spacing: 0) {
+                // Red top header band
+                Rectangle()
+                    .fill(Color(red: 1.0, green: 0.23, blue: 0.19))
+                    .frame(height: 14)
+                    .overlay(
+                        Text(weekdayString)
+                            .font(.system(size: 8, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                    )
+
+                Spacer(minLength: 0)
+
+                // Day number in center
+                Text(dayString)
+                    .font(.system(size: 19, weight: .semibold, design: .rounded))
+                    .foregroundColor(Color.black.opacity(0.85))
+
+                Spacer(minLength: 0)
+            }
+        }
+        .frame(width: 46, height: 46)
+        .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - Quick Action Menu View (Proportionally Spaced Two-Page Carousel Dock)
 
 struct SquareActionMenuView: View {
 
     @ObservedObject var viewModel: NotchViewModel
+    @State private var selectedPage: Int = 0
+
+    private var metrics: QuickActionMenuMetrics {
+        QuickActionMenuGeometryEngine.calculate(screen: ScreenHelper.targetScreen)
+    }
 
     var body: some View {
-        HStack(spacing: 16) {
+        VStack(spacing: 10) {
+            // Horizontal Carousel Container
+            HStack(spacing: 0) {
+                pageOne
+                    .frame(width: metrics.pageContentWidth)
+
+                pageTwo
+                    .frame(width: metrics.pageContentWidth)
+            }
+            .frame(width: metrics.pageContentWidth, alignment: .leading)
+            .offset(x: selectedPage == 0 ? 0 : -metrics.pageContentWidth)
+            .clipped()
+            .animation(.spring(response: 0.32, dampingFraction: 0.84), value: selectedPage)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 12)
+                    .onEnded { gesture in
+                        if gesture.translation.width < -25 && selectedPage == 0 {
+                            withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
+                                selectedPage = 1
+                            }
+                            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                        } else if gesture.translation.width > 25 && selectedPage == 1 {
+                            withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
+                                selectedPage = 0
+                            }
+                            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                        } else if gesture.translation.width > 45 && selectedPage == 0 {
+                            viewModel.restoreFromSquareMenu()
+                        }
+                    }
+            )
+
+            // Apple Capsule Pagination Dots (● ○)
+            HStack(spacing: 6) {
+                Button {
+                    withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
+                        selectedPage = 0
+                    }
+                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                } label: {
+                    Capsule(style: .continuous)
+                        .fill(selectedPage == 0 ? Color.white : Color.white.opacity(0.28))
+                        .frame(width: selectedPage == 0 ? 14 : 5, height: 5.0)
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
+                        selectedPage = 1
+                    }
+                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                } label: {
+                    Capsule(style: .continuous)
+                        .fill(selectedPage == 1 ? Color.white : Color.white.opacity(0.28))
+                        .frame(width: selectedPage == 1 ? 14 : 5, height: 5.0)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    // MARK: - Sayfa 1: Günlük Üretkenlik Araçları
+    private var pageOne: some View {
+        HStack(spacing: metrics.itemSpacing) {
             // 1. Notlar (Apple Notes)
             SquareActionItemView(
                 title: "Hızlı Not",
-                helpText: "Hızlı Not Ekle (⌥⇧N)"
+                helpText: "Hızlı Not Ekle (⌥⇧N)",
+                itemWidth: metrics.itemWidth
             ) {
                 AppleNotesSymbolView()
             } action: {
@@ -389,24 +686,107 @@ struct SquareActionMenuView: View {
             // 2. Anımsatıcı (Apple Reminders)
             SquareActionItemView(
                 title: "Anımsatıcı",
-                helpText: "Hızlı Anımsatıcı Ekle (⌥⇧R)"
+                helpText: "Hızlı Anımsatıcı Ekle (⌥⇧R)",
+                itemWidth: metrics.itemWidth
             ) {
                 AppleRemindersSymbolView()
             } action: {
                 viewModel.toggleQuickReminder()
             }
 
-            // 3. Ses Çıkışı (Apple Sound Route)
+            // 3. Pano Geçmişi (Apple Clipboard)
+            SquareActionItemView(
+                title: "Pano",
+                helpText: "Pano Geçmişi (⌥⇧V)",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleClipboardSymbolView()
+            } action: {
+                viewModel.toggleClipboardManager()
+            }
+
+            // 4. Zamanlayıcı (Apple Timer / Pomodoro)
+            SquareActionItemView(
+                title: "Zamanlayıcı",
+                helpText: "Zamanlayıcı Kur (⌥⇧T)",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleTimerSymbolView()
+            } action: {
+                viewModel.toggleTimerManager()
+            }
+
+            // 5. Ses Çıkışı (Apple Sound Route)
             SquareActionItemView(
                 title: "Ses Çıkışı",
-                helpText: "Ses Giriş ve Çıkışları"
+                helpText: "Ses Giriş ve Çıkışları",
+                itemWidth: metrics.itemWidth
             ) {
                 AppleSoundSymbolView()
             } action: {
                 viewModel.openAudioRoutePicker()
             }
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+    }
+
+    // MARK: - Sayfa 2: Sistem, Medya & Donanım Araçları
+    private var pageTwo: some View {
+        HStack(spacing: metrics.itemSpacing) {
+            // 1. Ekran Alıntısı & OCR (Faz 3)
+            SquareActionItemView(
+                title: "Alıntı & OCR",
+                helpText: "Ekran Alıntısı & Metin Tanıma",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleScreenshotSymbolView()
+            } action: {
+                viewModel.triggerQuickScreenshotOCR()
+            }
+
+            // 2. Kamera Aynası (Faz 4)
+            SquareActionItemView(
+                title: "Ayna",
+                helpText: "Hızlı Kamera Kontrolü",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleMirrorSymbolView()
+            } action: {
+                viewModel.toggleCameraMirror()
+            }
+
+            // 3. Odaklanma Modu (Faz 5)
+            SquareActionItemView(
+                title: "Odak Modu",
+                helpText: "Rahatsız Etmeyin",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleFocusSymbolView()
+            } action: {
+                viewModel.toggleFocusMode()
+            }
+
+            // 4. Harici Diskleri Çıkar (Faz 6)
+            SquareActionItemView(
+                title: "Disk Çıkar",
+                helpText: "Bağlı Diskleri Güvenle Çıkar",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleEjectSymbolView()
+            } action: {
+                viewModel.toggleExternalDriveManager()
+            }
+
+            // 5. Takvim & Toplantı (Faz 7)
+            SquareActionItemView(
+                title: "Takvim",
+                helpText: "Yaklaşan Etkinlikler",
+                itemWidth: metrics.itemWidth
+            ) {
+                AppleCalendarSymbolView()
+            } action: {
+                viewModel.toggleCalendarManager()
+            }
+        }
     }
 }
 
@@ -416,6 +796,7 @@ struct SquareActionItemView<SymbolContent: View>: View {
 
     let title: String
     let helpText: String
+    var itemWidth: CGFloat = 66.0
     @ViewBuilder let symbol: () -> SymbolContent
     let action: () -> Void
 
@@ -427,16 +808,16 @@ struct SquareActionItemView<SymbolContent: View>: View {
             NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
             action()
         } label: {
-            VStack(spacing: 5) {
+            VStack(spacing: 6) {
                 symbol()
                     .scaleEffect(isPressed ? 0.92 : (isHovered ? 1.06 : 1.0))
 
                 Text(title)
-                    .font(.system(size: 11, weight: .medium, design: .default))
+                    .font(.system(size: 10.5, weight: .medium, design: .default))
                     .foregroundColor(isHovered ? .white : .white.opacity(0.82))
                     .lineLimit(1)
             }
-            .frame(width: 66)
+            .frame(width: itemWidth)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -705,3 +1086,229 @@ struct MuteAlertView: View {
         }
     }
 }
+
+// MARK: - Camera Mirror (AVFoundation Live Preview HUD)
+
+final class CameraCaptureManager: NSObject, ObservableObject {
+    static let shared = CameraCaptureManager()
+
+    let session = AVCaptureSession()
+    @Published var isRunning = false
+    @Published var hasPermission = false
+    @Published var permissionDenied = false
+
+    private var isConfigured = false
+
+    func checkPermissionAndStart() {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized:
+            hasPermission = true
+            permissionDenied = false
+            startSession()
+        case .notDetermined:
+            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
+                DispatchQueue.main.async {
+                    self?.hasPermission = granted
+                    self?.permissionDenied = !granted
+                    if granted {
+                        self?.startSession()
+                    }
+                }
+            }
+        case .denied, .restricted:
+            hasPermission = false
+            permissionDenied = true
+        @unknown default:
+            permissionDenied = true
+        }
+    }
+
+    private func configureSession() {
+        guard !isConfigured else { return }
+        session.beginConfiguration()
+        session.sessionPreset = .medium
+
+        let discoverySession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera],
+            mediaType: .video,
+            position: .front
+        )
+
+        let device = discoverySession.devices.first ?? AVCaptureDevice.default(for: .video)
+
+        if let device = device {
+            do {
+                let input = try AVCaptureDeviceInput(device: device)
+                if session.canAddInput(input) {
+                    session.addInput(input)
+                }
+            } catch {
+                print("[CameraCaptureManager] Unable to add video input: \(error)")
+            }
+        }
+
+        session.commitConfiguration()
+        isConfigured = true
+    }
+
+    func startSession() {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            self.configureSession()
+            if !self.session.isRunning {
+                self.session.startRunning()
+            }
+            DispatchQueue.main.async {
+                self.isRunning = true
+            }
+        }
+    }
+
+    func stopSession() {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+            if self.session.isRunning {
+                self.session.stopRunning()
+            }
+            DispatchQueue.main.async {
+                self.isRunning = false
+            }
+        }
+    }
+}
+
+final class CameraVideoNSView: NSView {
+    override func layout() {
+        super.layout()
+        layer?.frame = bounds
+        layer?.sublayers?.forEach { $0.frame = bounds }
+    }
+}
+
+struct CameraPreviewLayerView: NSViewRepresentable {
+    let session: AVCaptureSession
+
+    func makeNSView(context: Context) -> NSView {
+        let view = CameraVideoNSView()
+        view.wantsLayer = true
+
+        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
+        previewLayer.videoGravity = .resizeAspectFill
+        if let connection = previewLayer.connection, connection.isVideoMirroringSupported {
+            connection.automaticallyAdjustsVideoMirroring = false
+            connection.isVideoMirrored = true
+        }
+        view.layer = previewLayer
+        return view
+    }
+
+    func updateNSView(_ nsView: NSView, context: Context) {
+        if let previewLayer = nsView.layer as? AVCaptureVideoPreviewLayer {
+            previewLayer.frame = nsView.bounds
+            if let connection = previewLayer.connection, connection.isVideoMirroringSupported {
+                connection.automaticallyAdjustsVideoMirroring = false
+                connection.isVideoMirrored = true
+            }
+        }
+    }
+}
+
+struct CameraMirrorView: View {
+    @ObservedObject private var cameraManager = CameraCaptureManager.shared
+    let onDismiss: () -> Void
+
+    @State private var pulseGreen = false
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // Header bar
+            HStack(alignment: .center) {
+                HStack(spacing: 6) {
+                    Circle()
+                        .fill(Color(red: 0.20, green: 0.78, blue: 0.35))
+                        .frame(width: 7, height: 7)
+                        .scaleEffect(pulseGreen ? 1.25 : 0.85)
+                        .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulseGreen)
+
+                    Text("Kamera Aynası")
+                        .font(.system(size: 12.5, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+
+                Spacer()
+
+                Button {
+                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                    cameraManager.stopSession()
+                    onDismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.white.opacity(0.60))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 4)
+
+            // Video Preview Frame
+            ZStack {
+                RoundedRectangle(cornerRadius: 13, style: .continuous)
+                    .fill(Color.black.opacity(0.60))
+
+                if cameraManager.permissionDenied {
+                    VStack(spacing: 6) {
+                        Image(systemName: "video.slash.fill")
+                            .font(.system(size: 24, weight: .medium))
+                            .foregroundColor(.white.opacity(0.50))
+
+                        Text("Kamera İzni Gerekli")
+                            .font(.system(size: 11.5, weight: .semibold))
+                            .foregroundColor(.white)
+
+                        Button {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
+                                NSWorkspace.shared.open(url)
+                            }
+                        } label: {
+                            Text("Ayarları Aç")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Capsule().fill(Color.white.opacity(0.18)))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(8)
+                } else if cameraManager.isRunning {
+                    CameraPreviewLayerView(session: cameraManager.session)
+                        .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                } else {
+                    VStack(spacing: 6) {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white.opacity(0.8)))
+
+                        Text("Kamera Başlatılıyor...")
+                            .font(.system(size: 10.5, weight: .medium))
+                            .foregroundColor(.white.opacity(0.60))
+                    }
+                }
+            }
+            .frame(width: 250, height: 140)
+            .overlay(
+                RoundedRectangle(cornerRadius: 13, style: .continuous)
+                    .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
+            )
+        }
+        .frame(width: 260)
+        .onAppear {
+            pulseGreen = true
+            cameraManager.checkPermissionAndStart()
+        }
+        .onDisappear {
+            cameraManager.stopSession()
+        }
+    }
+}
+

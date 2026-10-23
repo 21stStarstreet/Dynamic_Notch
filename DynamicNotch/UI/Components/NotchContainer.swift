@@ -30,7 +30,7 @@ struct NotchContainerView: View {
     @State private var isHoveringLeftOrb: Bool = false
 
     private var screen: NSScreen {
-        NSScreen.main ?? NSScreen.screens[0]
+        ScreenHelper.targetScreen
     }
 
     private var isFloating: Bool {
@@ -164,7 +164,7 @@ struct NotchContainerView: View {
             case .welcomeGreeting:
                 return 12.0
             case .emptySquareMenu:
-                return 10.0
+                return QuickActionMenuGeometryEngine.calculate(screen: screen).floatingTopPadding
             case .nowPlaying:
                 return 12.0
             default:
@@ -192,6 +192,8 @@ struct NotchContainerView: View {
         case .accessibilityPermissionRequired:
             return topCutoutClearance + 12.0
         case .emptySquareMenu:
+            return topCutoutClearance + QuickActionMenuGeometryEngine.calculate(screen: screen).topClearanceBelowCutout
+        case .cameraMirror:
             return topCutoutClearance + 8.0
         default:
             return topCutoutClearance + (isDisplayingAlert ? 5.0 : 7.0)
@@ -217,7 +219,9 @@ struct NotchContainerView: View {
         case .timer:
             return 0.0
         case .emptySquareMenu:
-            return 12.0
+            return QuickActionMenuGeometryEngine.calculate(screen: screen).bottomPadding
+        case .cameraMirror:
+            return 14.0
         case .timerSetup:
             return 9.0
         case .volumeChange, .muted:
@@ -254,7 +258,9 @@ struct NotchContainerView: View {
         case .welcomeGreeting:
             return 24.0
         case .emptySquareMenu:
-            return 20.0
+            return QuickActionMenuGeometryEngine.calculate(screen: screen).horizontalPadding
+        case .cameraMirror:
+            return 16.0
         default:
             if viewModel.displayedContent?.prefersCompactPresentation == true && !VolumeHUDViewModel.shared.isAudioRouteExpanded {
                 return NotchPositionCalculator.compactTopEarRadius + 14.0
@@ -272,7 +278,7 @@ struct NotchContainerView: View {
             return .top
         case .screenshot:
             return .top
-        case .clipboard, .noInternet, .timer, .timerSetup, .shelf, .hotspot, .onboarding, .welcomeGreeting, .quickNote, .quickReminder, .accessibilityPermissionRequired, .spotifyAuthorized:
+        case .clipboard, .noInternet, .timer, .timerSetup, .shelf, .hotspot, .onboarding, .welcomeGreeting, .quickNote, .quickReminder, .accessibilityPermissionRequired, .spotifyAuthorized, .cameraMirror:
             return .top
         case .nowPlaying:
             return .top

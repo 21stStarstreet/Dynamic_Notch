@@ -2492,7 +2492,7 @@ final class NotchViewModel: ObservableObject {
             contentBeforeSquareMenu = live
         }
 
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = ScreenHelper.targetScreen
         let targetSize = effectiveTargetSize(for: .emptySquareMenu, screen: screen)
 
         NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
@@ -2522,7 +2522,7 @@ final class NotchViewModel: ObservableObject {
         }
 
         contentBeforeSquareMenu = nil
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = ScreenHelper.targetScreen
         let targetSize = effectiveTargetSize(for: previous, screen: screen)
 
         NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
@@ -2620,6 +2620,119 @@ final class NotchViewModel: ObservableObject {
                 self.dismissCurrentAlert()
             }
         }
+    }
+
+    // MARK: - Quick Screenshot & OCR (Quick Actions Dock)
+
+    func triggerQuickScreenshotOCR() {
+        guard isNotchEnabled && !isScreenLocked else { return }
+
+        // 1. Temporarily dismiss notch so screen selection is 100% unobstructed
+        hideCompletely()
+
+        // 2. Run screencapture asynchronously on background queue
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+
+            let tempURL = FileManager.default.temporaryDirectory
+                .appendingPathComponent("DynamicNotch_OCR_\(UUID().uuidString).png")
+
+            let process = Process()
+            process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
+            // -i: interactive select, -r: suppress audio, save to file
+            process.arguments = ["-i", "-r", tempURL.path]
+
+            do {
+                try process.run()
+                process.waitUntilExit()
+            } catch {
+                return
+            }
+
+            guard FileManager.default.fileExists(atPath: tempURL.path),
+                  let image = NSImage(contentsOf: tempURL) else {
+                // User pressed Esc or cancelled
+                return
+            }
+
+            // Always write captured image to clipboard
+            DispatchQueue.main.async {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.writeObjects([image])
+            }
+
+            Task {
+                let recognizedText = await VisionOCRService.shared.recognizeText(from: image)
+
+                await MainActor.run {
+                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+
+                    if let text = recognizedText, !text.isEmpty {
+                        // Put recognized text on pasteboard
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(text, forType: .string)
+
+                        let item = ScreenshotItem(fileURL: tempURL, thumbnail: image, recognizedText: text)
+                        self.handleIncoming(.screenshot(item))
+                    } else {
+                        let item = ScreenshotItem(fileURL: tempURL, thumbnail: image, recognizedText: nil)
+                        self.handleIncoming(.screenshot(item))
+                    }
+                }
+            }
+        }
+    }
+
+    func toggleCameraMirror() {
+        guard isNotchEnabled && !isScreenLocked else { return }
+        if isNotchTemporarilyHidden {
+            isNotchTemporarilyHidden = false
+        }
+
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+
+        if isExpanded {
+            if case .cameraMirror = displayedContent {
+                showCompactWings()
+                return
+            }
+            if currentAlert != nil {
+                dismissCurrentAlert()
+            }
+            dismissTimer?.cancel()
+            dismissTimer = nil
+            currentAlert = nil
+            updateExpandedInPlace(to: .cameraMirror)
+            return
+        }
+
+        expandFromIdleOrCompact(for: .cameraMirror)
+    }
+
+    func toggleFocusMode() {
+        guard isNotchEnabled && !isScreenLocked else { return }
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+        simulatedFocusState.toggle()
+        let newState = simulatedFocusState
+
+        DispatchQueue.global(qos: .userInitiated).async {
+            let script = """
+            tell application "System Events"
+                tell its application process "ControlCenter"
+                    set focusButtons to (every menu bar item of menu bar 1 whose description contains "Focus" or description contains "Odak" or description contains "Do Not Disturb" or description contains "Rahatsız")
+                    if (count of focusButtons) > 0 then
+                        click item 1 of focusButtons
+                    end if
+                end tell
+            end tell
+            """
+            if let appleScript = NSAppleScript(source: script) {
+                var errorDict: NSDictionary?
+                appleScript.executeAndReturnError(&errorDict)
+            }
+        }
+
+        handleIncoming(.focusChanged(newState))
     }
 
     // MARK: - Spotify Permission Dialog Toggle (Option + Shift + S Test HotKey)

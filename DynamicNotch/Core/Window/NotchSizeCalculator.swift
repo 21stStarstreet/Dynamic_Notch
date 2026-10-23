@@ -26,9 +26,13 @@ struct NotchSizeCalculator {
     /// 26pt left (12pt ear + 14pt inner margin) + 26pt right = 52pt total.
     static let alertHorizontalPadding: CGFloat = 52.0
 
-    /// Dimensions for the 2-finger swipe Quick Action Menu capsule (280 × 84 pt body)
-    static let quickActionMenuWidth: CGFloat = 280.0
-    static let quickActionMenuBodyHeight: CGFloat = 84.0
+    /// Dimensions for the 2-finger swipe Quick Action Menu capsule (dynamically computed)
+    static var quickActionMenuWidth: CGFloat {
+        QuickActionMenuGeometryEngine.calculate().totalBodyWidth
+    }
+    static var quickActionMenuBodyHeight: CGFloat {
+        QuickActionMenuGeometryEngine.calculate().totalBodyHeight
+    }
 
     static let maxScreenFraction: CGFloat = 0.60
 
@@ -121,8 +125,15 @@ struct NotchSizeCalculator {
             hPadding = liveActivityHorizontalPadding
             minWidth = max(compactWidth + 44.0, 348.0)
         } else if case .emptySquareMenu = content {
+            let metrics = QuickActionMenuGeometryEngine.calculate(screen: screen)
             hPadding = 0.0
-            minWidth = quickActionMenuWidth
+            minWidth = metrics.totalBodyWidth
+            let menuHeight = isFloating ? metrics.floatingBodyHeight : (metrics.totalBodyHeight + topCutoutHeight)
+            let clampedWidth = min(maxWidth, max(minWidth, rawWidth + hPadding))
+            return CGSize(width: ceil(clampedWidth), height: ceil(menuHeight))
+        } else if case .cameraMirror = content {
+            hPadding = 0.0
+            minWidth = 280.0
         } else {
             hPadding = alertHorizontalPadding
             minWidth = max(baseNotchWidth + 64.0, 248.0)
@@ -383,9 +394,18 @@ struct NotchSizeCalculator {
             return (220, 86)
 
         // ── Quick Action Menu (2-Finger Swipe Gesture) ───────────────────────────
-        // Height: 84pt below cutout. Sleek, proportional horizontal Apple capsule (320 × 122 pt).
+        // Dimensions dynamically derived via QuickActionMenuGeometryEngine based on
+        // item count, icon size, corner curvature, and safe tangent margins.
         case .emptySquareMenu:
-            return (quickActionMenuWidth, quickActionMenuBodyHeight)
+            let targetScreen = ScreenHelper.targetScreen
+            let metrics = QuickActionMenuGeometryEngine.calculate(screen: targetScreen)
+            let bodyH = NotchPositionCalculator.isFloatingCapsule(for: targetScreen) ? metrics.floatingBodyHeight : metrics.totalBodyHeight
+            return (metrics.totalBodyWidth, bodyH)
+
+        // ── Camera Mirror Modal (Live Face / Hair Video Check) ─────────────────────
+        // Height: 184pt below cutout. 280pt width.
+        case .cameraMirror:
+            return (280, 184)
 
         // ── Timer Setup Modal ──────────────────────────────────────────────────────
         // Height: 72pt below cutout (9pt top margin + 54pt content + 9pt bottom margin).
@@ -499,5 +519,137 @@ struct NotchSizeCalculator {
         guard !text.isEmpty else { return 0 }
         let attrs: [NSAttributedString.Key: Any] = [.font: font]
         return ceil((text as NSString).size(withAttributes: attrs).width)
+    }
+}
+
+// MARK: - Quick Action Menu Geometry & Spacing Engine (Apple HIG Dynamic Bounds)
+
+@MainActor
+struct QuickActionMenuMetrics {
+    let itemCount: Int
+    let pageCount: Int
+    let iconSize: CGFloat
+    let itemWidth: CGFloat
+    let itemContentHeight: CGFloat
+    let itemSpacing: CGFloat
+    let horizontalPadding: CGFloat
+    let topClearanceBelowCutout: CGFloat
+    let floatingTopPadding: CGFloat
+    let bottomPadding: CGFloat
+    let pageContentWidth: CGFloat
+    let totalBodyWidth: CGFloat
+    let totalBodyHeight: CGFloat
+    let floatingBodyHeight: CGFloat
+}
+
+@MainActor
+struct QuickActionMenuGeometryEngine {
+
+    /// Standard Apple Control Center squircle icon dimension (46 × 46 pt)
+    static let standardIconSize: CGFloat = 46.0
+
+    /// Computes full dynamic geometry, margins, and proportional spacing.
+    /// - Parameters:
+    ///   - screen: Current NSScreen displaying the notch (defaults to ScreenHelper.targetScreen).
+    ///   - itemCount: Number of action items per page (default: 5).
+    ///   - pageCount: Number of carousel pages (default: 2).
+    /// - Returns: Complete `QuickActionMenuMetrics` value with all derived bounds.
+    static func calculate(
+        screen: NSScreen = ScreenHelper.targetScreen,
+        itemCount: Int = 5,
+        pageCount: Int = 2
+    ) -> QuickActionMenuMetrics {
+        let isFloating = NotchPositionCalculator.isFloatingCapsule(for: screen)
+        let baseNotchWidth = NotchPositionCalculator.notchBaseWidth(for: screen)
+
+        // 1. Dynamic Text Measurement across all Quick Action labels
+        let labels = [
+            "Hızlı Not", "Anımsatıcı", "Pano", "Zamanlayıcı", "Ses Çıkışı",
+            "Alıntı & OCR", "Ayna", "Odak Modu", "Disk Çıkar", "Takvim"
+        ]
+        let labelFont = NSFont.systemFont(ofSize: 10.5, weight: .medium)
+        let maxLabelW = labels.map { NotchSizeCalculator.measureText($0, font: labelFont) }.max() ?? 60.0
+
+        // 2. Item Metrics (Icon 46pt, Gap 6pt, Label 14pt)
+        let iconSize: CGFloat = standardIconSize
+        let iconToLabelGap: CGFloat = 6.0
+        let labelHeight: CGFloat = 14.0
+        let itemContentHeight: CGFloat = iconSize + iconToLabelGap + labelHeight // 66.0 pt
+
+        // Item slot width: must comfortably fit the widest label ("Zamanlayıcı" ~62pt)
+        // with generous breathing room (minimum 66.0 pt)
+        let itemWidth: CGFloat = max(standardIconSize + 18.0, ceil(maxLabelW + 6.0)) // ~66.0 pt
+
+        // 3. Tangent Safe Curvature Bounds (Corner Radius: 24pt)
+        let cornerRadius: CGFloat = 24.0
+        // Generous side border margin ensures outer icons never collide with curved corners:
+        let minHorizontalMargin: CGFloat = max(cornerRadius * 1.05, 26.0) // 26.0 pt
+
+        // Base inter-item spacing (comfortable, spacious rhythm)
+        let count = max(1, itemCount)
+        let baseSpacing: CGFloat = 12.0
+
+        // 4. Content Width & Target Total Width
+        let rawContentWidth = (CGFloat(count) * itemWidth) + (CGFloat(max(0, count - 1)) * baseSpacing)
+        let rawTotalWidth = rawContentWidth + (minHorizontalMargin * 2.0)
+
+        // Minimum width constrained by hardware cutout + safety ears
+        let minAllowedWidth = max(baseNotchWidth + 60.0, 380.0)
+        let maxAllowedWidth = screen.frame.width * NotchSizeCalculator.maxScreenFraction
+
+        let targetWidth = min(maxAllowedWidth, max(minAllowedWidth, rawTotalWidth))
+
+        // Proportional Spacing Distribution (if wider than baseline)
+        let extraDelta = max(0.0, targetWidth - rawTotalWidth)
+        let horizontalPadding: CGFloat
+        let itemSpacing: CGFloat
+
+        if extraDelta > 0 && count > 1 {
+            horizontalPadding = minHorizontalMargin + (extraDelta * 0.35 / 2.0)
+            let remainingSpaceForGaps = extraDelta * 0.65
+            itemSpacing = baseSpacing + (remainingSpaceForGaps / CGFloat(count - 1))
+        } else {
+            horizontalPadding = minHorizontalMargin
+            itemSpacing = baseSpacing
+        }
+
+        let pageContentWidth = (CGFloat(count) * itemWidth) + (CGFloat(max(0, count - 1)) * itemSpacing)
+
+        // 5. Vertical Rhythm & Clearances
+        // Clearance below hardware cutout (when attached to physical notch):
+        let topClearanceBelowCutout: CGFloat = 14.0
+
+        // Top clearance when floating:
+        let floatingTopPadding: CGFloat = 16.0
+
+        // Bottom clearance concentric with 24pt squircle curvature:
+        let bottomPadding: CGFloat = 14.0
+
+        // Pagination section allocation
+        let hasPagination = pageCount > 1
+        let paginationSectionHeight: CGFloat = hasPagination ? 15.0 : 0.0 // 10.0 gap + 5.0 dots
+
+        // Total body height below cutout (for physical notch)
+        let totalBodyHeight = topClearanceBelowCutout + itemContentHeight + paginationSectionHeight + bottomPadding // 14 + 66 + 15 + 14 = 109.0 pt
+
+        // Floating body height (for floating capsule)
+        let floatingBodyHeight = floatingTopPadding + itemContentHeight + paginationSectionHeight + bottomPadding // 16 + 66 + 15 + 14 = 111.0 pt
+
+        return QuickActionMenuMetrics(
+            itemCount: count,
+            pageCount: pageCount,
+            iconSize: iconSize,
+            itemWidth: ceil(itemWidth),
+            itemContentHeight: ceil(itemContentHeight),
+            itemSpacing: ceil(itemSpacing * 10.0) / 10.0,
+            horizontalPadding: ceil(horizontalPadding * 10.0) / 10.0,
+            topClearanceBelowCutout: ceil(topClearanceBelowCutout),
+            floatingTopPadding: ceil(floatingTopPadding),
+            bottomPadding: ceil(bottomPadding),
+            pageContentWidth: ceil(pageContentWidth),
+            totalBodyWidth: ceil(targetWidth),
+            totalBodyHeight: ceil(totalBodyHeight),
+            floatingBodyHeight: ceil(floatingBodyHeight)
+        )
     }
 }

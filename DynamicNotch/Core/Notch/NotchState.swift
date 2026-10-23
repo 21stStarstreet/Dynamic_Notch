@@ -203,9 +203,10 @@ struct ScreenshotItem: Equatable, Identifiable {
     var fileURL: URL
     var thumbnail: NSImage
     var createdAt: Date = Date()
+    var recognizedText: String? = nil
 
     static func == (lhs: ScreenshotItem, rhs: ScreenshotItem) -> Bool {
-        lhs.fileURL == rhs.fileURL
+        lhs.fileURL == rhs.fileURL && lhs.recognizedText == rhs.recognizedText
     }
 }
 
@@ -270,6 +271,7 @@ enum NotchState: Equatable {
         case accessibilityPermissionRequired
         case spotifyAuthorized
         case emptySquareMenu
+        case cameraMirror
 
         // MARK: Category
 
@@ -303,6 +305,7 @@ enum NotchState: Equatable {
             case .accessibilityPermissionRequired: return "accessibilityPermissionRequired"
             case .spotifyAuthorized: return "spotifyAuthorized"
             case .emptySquareMenu: return "emptySquareMenu"
+            case .cameraMirror: return "cameraMirror"
             case .timerSetup: return "timerSetup"
             case .clipboard: return "clipboard"
             case .screenRecording: return "screenRecording"
@@ -351,6 +354,7 @@ enum NotchState: Equatable {
                  .accessibilityPermissionRequired,
                  .spotifyAuthorized,
                  .emptySquareMenu,
+                 .cameraMirror,
                  .screenRecording,
                  .onboarding,
                  .welcomeGreeting:
@@ -427,7 +431,8 @@ enum NotchState: Equatable {
                      (.quickNoteSaved, .quickNoteSaved),
                      (.quickReminder, .quickReminder),
                      (.quickReminderSaved, .quickReminderSaved),
-                     (.emptySquareMenu, .emptySquareMenu):
+                     (.emptySquareMenu, .emptySquareMenu),
+                     (.cameraMirror, .cameraMirror):
                     return true
                 default:
                     return false
@@ -446,6 +451,7 @@ enum NotchState: Equatable {
             case .onboarding, .welcomeGreeting:           return 150
             case .screenRecording:                        return 100
             case .emptySquareMenu:                        return 99
+            case .cameraMirror:                           return 82
             case .noInternet:                             return 95
             case .batteryLow:                             return 90
             case .hotspotLowBattery:                      return 89
@@ -534,7 +540,7 @@ enum NotchState: Equatable {
             case .brightnessChange:                       return 2.0
             case .keyboardBrightnessChange:               return 2.2
             case .volumeChange:                           return 2.0
-            case .emptySquareMenu:                        return nil
+            case .emptySquareMenu, .cameraMirror:         return nil
             case .nowPlaying, .download, .timer, .externalDrive, .calendarEvent, .hotspot, .screenRecording, .onboarding, .welcomeGreeting: return nil
             }
         }

@@ -8,6 +8,7 @@
 
 import SwiftUI
 import AppKit
+import Vision
 
 struct ScreenshotAlertView: View {
 
@@ -18,6 +19,8 @@ struct ScreenshotAlertView: View {
 
     @State private var isHoveringCopy: Bool = false
     @State private var isCopied: Bool = false
+    @State private var isHoveringOCR: Bool = false
+    @State private var isOCRDone: Bool = false
     @State private var isHoveringAirDrop: Bool = false
     @State private var isHoveringWhatsApp: Bool = false
     @State private var isHoveringShare: Bool = false
@@ -51,13 +54,28 @@ struct ScreenshotAlertView: View {
 
     // MARK: - 1. TOP: Minimalist Header + Close '✕'
     private var headerView: some View {
-        HStack(alignment: .center) {
-            Text(titleText)
-                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+        HStack(alignment: .center, spacing: 6) {
+            Text(item.recognizedText != nil ? (isTurkish ? "Metin Panoya Kopyalandı" : "Text Copied") : titleText)
+                .font(.system(size: 12, weight: .semibold, design: .rounded))
                 .foregroundColor(.white)
                 .lineLimit(1)
 
-            Spacer(minLength: 8)
+            if item.recognizedText != nil {
+                Text("OCR")
+                    .font(.system(size: 8.5, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1.5)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(LinearGradient(
+                                colors: [Color(red: 0.68, green: 0.32, blue: 0.90), Color(red: 0.42, green: 0.28, blue: 0.86)],
+                                startPoint: .top, endPoint: .bottom
+                            ))
+                    )
+            }
+
+            Spacer(minLength: 4)
 
             Button {
                 onDismiss()
@@ -130,8 +148,9 @@ struct ScreenshotAlertView: View {
 
     // MARK: - 3. BOTTOM: Dairesel Aksiyon Butonları Dock
     private var actionButtonsDock: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: 9) {
             copyButton
+            ocrButton
             airDropButton
             whatsAppButton
             shareButton
@@ -201,6 +220,56 @@ struct ScreenshotAlertView: View {
         .buttonStyle(.plain)
         .onHover { isHoveringCopy = $0 }
         .help(isTurkish ? "Panoya Kopyala (Sadece Kopyala)" : "Copy to Clipboard")
+    }
+
+    // 1b. OCR Text Copy Button (Metni Kopyala)
+    private var ocrButton: some View {
+        Button {
+            guard !isOCRDone else { return }
+            Task {
+                let recognized = await VisionOCRService.shared.recognizeText(from: item.thumbnail)
+                await MainActor.run {
+                    if let text = recognized, !text.isEmpty {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(text, forType: .string)
+                        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.70)) {
+                            isOCRDone = true
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.60) {
+                            onDismiss()
+                        }
+                    } else {
+                        NSHapticFeedbackManager.defaultPerformer.perform(.generic, performanceTime: .default)
+                    }
+                }
+            }
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(isOCRDone ? Color.notchGreen.opacity(0.92) : (isHoveringOCR ? Color(red: 0.58, green: 0.28, blue: 0.86) : Color(red: 0.50, green: 0.22, blue: 0.78).opacity(0.85)))
+                    .frame(width: 38, height: 38)
+                    .overlay(
+                        Circle().stroke(Color.white.opacity(isHoveringOCR ? 0.40 : 0.22), lineWidth: 1)
+                    )
+                    .shadow(color: Color(red: 0.50, green: 0.22, blue: 0.78).opacity(0.35), radius: 4, x: 0, y: 2)
+
+                if isOCRDone {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.white)
+                } else {
+                    Image(systemName: "text.viewfinder")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+            }
+            .scaleEffect(isHoveringOCR ? 1.08 : 1.0)
+            .animation(.spring(response: 0.26, dampingFraction: 0.72), value: isHoveringOCR)
+        }
+        .buttonStyle(.plain)
+        .onHover { isHoveringOCR = $0 }
+        .help(isTurkish ? "Metni Kopyala (OCR)" : "Copy Text (OCR)")
     }
 
     // 2. AirDrop Button
@@ -413,6 +482,47 @@ private struct NSViewAccessor: NSViewRepresentable {
     func updateNSView(_ nsView: NSView, context: Context) {
         DispatchQueue.main.async {
             self.onView(nsView)
+        }
+    }
+}
+
+// MARK: - Vision OCR Service (Apple Vision Text Recognition)
+
+final class VisionOCRService {
+
+    static let shared = VisionOCRService()
+    private init() {}
+
+    /// Extracts recognized text from an NSImage using Apple's Vision framework.
+    func recognizeText(from image: NSImage) async -> String? {
+        guard let tiffData = image.tiffRepresentation,
+              let ciImage = CIImage(data: tiffData) else {
+            return nil
+        }
+
+        return await withCheckedContinuation { continuation in
+            let request = VNRecognizeTextRequest { request, error in
+                guard error == nil,
+                      let observations = request.results as? [VNRecognizedTextObservation] else {
+                    continuation.resume(returning: nil)
+                    return
+                }
+
+                let textLines = observations.compactMap { $0.topCandidates(1).first?.string }
+                let fullText = textLines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+                continuation.resume(returning: fullText.isEmpty ? nil : fullText)
+            }
+
+            request.recognitionLevel = .accurate
+            request.usesLanguageCorrection = true
+            request.recognitionLanguages = ["tr-TR", "en-US", "de-DE", "fr-FR", "es-ES"]
+
+            let handler = VNImageRequestHandler(ciImage: ciImage, options: [:])
+            do {
+                try handler.perform([request])
+            } catch {
+                continuation.resume(returning: nil)
+            }
         }
     }
 }

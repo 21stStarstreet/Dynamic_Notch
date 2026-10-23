@@ -70,5 +70,7 @@
 	<string>DynamicNotch üzerinden hızlı anımsatıcı ekleyebilmeniz ve Apple Anımsatıcılar ile eşzamanlayabilmeniz için gereklidir.</string>
 	<key>NSRemindersFullAccessUsageDescription</key>
 	<string>DynamicNotch üzerinden hızlı anımsatıcı ekleyebilmeniz ve Apple Anımsatıcılar ile eşzamanlayabilmeniz için gereklidir.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Toplantı öncesi hızlı ayna kontrolü yapmak için kamera erişimi gereklidir.</string>
 </dict>
 </plist>
