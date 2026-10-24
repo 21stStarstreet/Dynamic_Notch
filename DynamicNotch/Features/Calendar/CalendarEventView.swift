@@ -27,19 +27,19 @@ struct CalendarEventView: View {
                     .frame(width: 8, height: 8)
                     .shadow(color: event.calendarColor.opacity(0.40), radius: 2)
 
-                Text(event.calendarTitle.uppercased())
-                    .font(.system(size: 9.5, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.50))
-                    .tracking(0.6)
+                Text(event.calendarTitle)
+                    .font(.system(size: 10.5, weight: .medium))
+                    .foregroundColor(.white.opacity(0.65))
+                    .lineLimit(1)
 
                 Spacer()
 
                 // Status Capsule (e.g. "ŞİMDİ", "10 DK KALDI")
-                HStack(spacing: 4) {
+                HStack(spacing: 5) {
                     if event.isHappeningNow {
                         Circle()
                             .fill(Color.notchGreen)
-                            .frame(width: 5.5, height: 5.5)
+                            .frame(width: 7, height: 7)
                             .scaleEffect(pulseState ? 1.25 : 0.85)
                             .opacity(pulseState ? 1.0 : 0.6)
                             .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulseState)
@@ -47,16 +47,16 @@ struct CalendarEventView: View {
                     }
 
                     Text(event.statusBadgeText)
-                        .font(.system(size: 9.0, weight: .bold, design: .rounded))
+                        .font(.system(size: 12.0, weight: .bold, design: .rounded))
                         .foregroundColor(event.isHappeningNow ? .notchGreen : event.calendarColor)
                 }
-                .padding(.horizontal, 7)
-                .padding(.vertical, 3)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4.5)
                 .background(
                     Capsule(style: .continuous)
                         .fill(
                             (event.isHappeningNow ? Color.notchGreen : event.calendarColor)
-                                .opacity(0.14)
+                                .opacity(0.18)
                         )
                 )
             }

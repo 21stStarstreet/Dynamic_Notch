@@ -53,7 +53,20 @@ struct NotchSizeCalculator {
         let maxWidth        = screen.frame.width * maxScreenFraction
         let topCutoutHeight = isFloating ? 14.0 : NotchPositionCalculator.effectiveNotchHeight(for: screen)
 
-        let (rawWidth, bodyHeight) = intrinsicSize(for: content)
+        if case .welcomeGreeting = content {
+            if isFloating {
+                let w: CGFloat = 320.0
+                let h: CGFloat = 100.0
+                return CGSize(width: w, height: h)
+            } else {
+                let w = max(baseNotchWidth + 140.0, 360.0)
+                let bodyH: CGFloat = 116.0
+                let h = topCutoutHeight + bodyH
+                return CGSize(width: ceil(w), height: ceil(h))
+            }
+        }
+
+        let (rawWidth, bodyHeight) = intrinsicSize(for: content, screen: screen)
         let totalHeight = bodyHeight + topCutoutHeight
 
         if content.prefersCompactPresentation && !VolumeHUDViewModel.shared.isAudioRouteExpanded {
@@ -164,7 +177,8 @@ struct NotchSizeCalculator {
     /// Every `bodyHeightBelowCutout` is strictly derived from:
     ///   `topClearance + elementHeight + bottomConcentricMargin`
     private static func intrinsicSize(
-        for content: NotchState.ContentType
+        for content: NotchState.ContentType,
+        screen: NSScreen
     ) -> (CGFloat, CGFloat) {
 
         switch content {
@@ -397,9 +411,8 @@ struct NotchSizeCalculator {
         // Dimensions dynamically derived via QuickActionMenuGeometryEngine based on
         // item count, icon size, corner curvature, and safe tangent margins.
         case .emptySquareMenu:
-            let targetScreen = ScreenHelper.targetScreen
-            let metrics = QuickActionMenuGeometryEngine.calculate(screen: targetScreen)
-            let bodyH = NotchPositionCalculator.isFloatingCapsule(for: targetScreen) ? metrics.floatingBodyHeight : metrics.totalBodyHeight
+            let metrics = QuickActionMenuGeometryEngine.calculate(screen: screen)
+            let bodyH = NotchPositionCalculator.isFloatingCapsule(for: screen) ? metrics.floatingBodyHeight : metrics.totalBodyHeight
             return (metrics.totalBodyWidth, bodyH)
 
         // ── Camera Mirror Modal (Live Face / Hair Video Check) ─────────────────────
@@ -476,7 +489,9 @@ struct NotchSizeCalculator {
             let hasNext = CalendarManager.shared.todayEvents.contains { $0.id != event.id && $0.startDate > event.startDate }
             let bodyHeight: CGFloat = hasNext ? 146.0 : 122.0
             let titleW = measureText(event.title, font: titleFont)
-            let rawWidth = max(340.0, min(titleW + 90.0, 420.0))
+            let badgeFont = NSFont.systemFont(ofSize: 11, weight: .bold)
+            let headerW = measureText(event.calendarTitle, font: subtitleFont) + measureText(event.statusBadgeText, font: badgeFont) + 48.0
+            let rawWidth = max(360.0, min(max(titleW + 90.0, headerW), 440.0))
             return (rawWidth, bodyHeight)
 
         // ── Calendar Event Alert (Transient HUD) ───────────────────────────────────
@@ -499,17 +514,15 @@ struct NotchSizeCalculator {
 
         // ── Onboarding Presentation (First Launch & Welcome Experience) ──────────
         case .onboarding(let step):
-            let isNotchless = !NotchDetector.hasPhysicalNotch(on: NSScreen.main ?? NSScreen.screens[0])
+            let isNotchless = !NotchDetector.hasPhysicalNotch(on: screen)
             let size = step.dynamicSize(baseWidth: 160, isNotchless: isNotchless)
             return (size.width, size.height)
 
         case .welcomeGreeting:
-            let screen = NSScreen.main ?? NSScreen.screens[0]
-            let isNotchless = !NotchDetector.hasPhysicalNotch(on: screen)
-            let baseWidth = isNotchless ? 140.0 : NotchPositionCalculator.notchBaseWidth(for: screen)
-            let topCutout = NotchPositionCalculator.effectiveNotchHeight(for: screen)
-            let w = max(baseWidth + 80, 260)
-            return (w, topCutout + 64)
+            let isFloating = NotchPositionCalculator.isFloatingCapsule(for: screen)
+            let baseWidth = isFloating ? 140.0 : NotchPositionCalculator.notchBaseWidth(for: screen)
+            let w = isFloating ? 320.0 : max(baseWidth + 140.0, 360.0)
+            return (w, 116.0)
         }
     }
 
@@ -548,14 +561,17 @@ struct QuickActionMenuGeometryEngine {
     /// Standard Apple Control Center squircle icon dimension (46 × 46 pt)
     static let standardIconSize: CGFloat = 46.0
 
-    /// Computes full dynamic geometry, margins, and proportional spacing.
-    /// - Parameters:
-    ///   - screen: Current NSScreen displaying the notch (defaults to ScreenHelper.targetScreen).
-    ///   - itemCount: Number of action items per page (default: 5).
-    ///   - pageCount: Number of carousel pages (default: 2).
-    /// - Returns: Complete `QuickActionMenuMetrics` value with all derived bounds.
+    /// Computes full dynamic geometry, margins, and proportional spacing using the active target screen.
     static func calculate(
-        screen: NSScreen = ScreenHelper.targetScreen,
+        itemCount: Int = 5,
+        pageCount: Int = 2
+    ) -> QuickActionMenuMetrics {
+        calculate(screen: ScreenHelper.targetScreen, itemCount: itemCount, pageCount: pageCount)
+    }
+
+    /// Computes full dynamic geometry, margins, and proportional spacing for an explicit screen.
+    static func calculate(
+        screen: NSScreen,
         itemCount: Int = 5,
         pageCount: Int = 2
     ) -> QuickActionMenuMetrics {

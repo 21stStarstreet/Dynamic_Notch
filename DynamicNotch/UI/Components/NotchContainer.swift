@@ -72,7 +72,7 @@ struct NotchContainerView: View {
                 return 38.0
             case .clipboard, .noInternet, .shelf, .quickNote, .quickReminder:
                 return 12.0
-            case .onboarding, .emptySquareMenu:
+            case .onboarding, .emptySquareMenu, .welcomeGreeting:
                 return 14.0
             case .timer, .timerSetup:
                 return NotchPositionCalculator.expandedTopEarRadius
@@ -110,6 +110,8 @@ struct NotchContainerView: View {
                 return 18.0
             case .timer, .timerSetup, .onboarding, .emptySquareMenu:
                 return 24.0
+            case .welcomeGreeting:
+                return 24.0
             case .volumeChange, .muted:
                 return VolumeHUDViewModel.shared.isAudioRouteExpanded ? 24.0 : 18.0
             case .brightnessChange, .screenRecording:
@@ -132,6 +134,9 @@ struct NotchContainerView: View {
         if isFloating {
             if !viewModel.isExpanded {
                 return effectivePillSize.height / 2.0
+            }
+            if case .welcomeGreeting = viewModel.displayedContent {
+                return min(effectivePillSize.height / 2.0, 36.0)
             }
             return bottomCornerRadius
         }
@@ -162,7 +167,7 @@ struct NotchContainerView: View {
             case .onboarding:
                 return 18.0
             case .welcomeGreeting:
-                return 12.0
+                return 26.0
             case .emptySquareMenu:
                 return QuickActionMenuGeometryEngine.calculate(screen: screen).floatingTopPadding
             case .nowPlaying:
@@ -186,7 +191,7 @@ struct NotchContainerView: View {
         case .onboarding:
             return topCutoutClearance + 12.0
         case .welcomeGreeting:
-            return topCutoutClearance + 6.0
+            return topCutoutClearance + 34.0
         case .spotifyAuthorized:
             return topCutoutClearance + 24.0
         case .accessibilityPermissionRequired:
@@ -201,6 +206,41 @@ struct NotchContainerView: View {
     }
 
     private var expandedBottomPadding: CGFloat {
+        if isFloating {
+            switch viewModel.displayedContent {
+            case .bluetoothConnected(let name) where AirPodsModel(deviceName: name).supportsFullAnimation:
+                return 16.0
+            case .screenshot:
+                return 20.0
+            case .quickNote, .quickReminder:
+                return 13.0
+            case .quickNoteSaved, .quickReminderSaved:
+                return 12.0
+            case .spotifyAuthorized, .accessibilityPermissionRequired:
+                return 16.0
+            case .clipboard, .noInternet, .shelf, .externalDrive, .externalDriveEjected, .hotspot:
+                return 16.0
+            case .timer:
+                return 12.0
+            case .timerSetup:
+                return 14.0
+            case .volumeChange, .muted:
+                return 15.0
+            case .onboarding:
+                return 18.0
+            case .welcomeGreeting:
+                return 26.0
+            case .emptySquareMenu:
+                return QuickActionMenuGeometryEngine.calculate(screen: screen).bottomPadding
+            case .nowPlaying:
+                return 12.0
+            case .cameraMirror:
+                return 14.0
+            default:
+                return isDisplayingAlert ? 12.0 : 14.0
+            }
+        }
+
         switch viewModel.displayedContent {
         case .bluetoothConnected(let name) where AirPodsModel(deviceName: name).supportsFullAnimation:
             return 16.0
@@ -229,7 +269,7 @@ struct NotchContainerView: View {
         case .onboarding:
             return 20.0
         case .welcomeGreeting:
-            return 8.0
+            return 34.0
         case .nowPlaying:
             return 12.0
         default:
@@ -256,7 +296,7 @@ struct NotchContainerView: View {
         case .onboarding:
             return 32.0
         case .welcomeGreeting:
-            return 24.0
+            return isFloating ? 45.0 : max((effectivePillSize.width - 230.0) / 2.0, 65.0)
         case .emptySquareMenu:
             return QuickActionMenuGeometryEngine.calculate(screen: screen).horizontalPadding
         case .cameraMirror:
@@ -274,11 +314,13 @@ struct NotchContainerView: View {
 
     private var expandedContentAlignment: Alignment {
         switch viewModel.displayedContent {
+        case .welcomeGreeting:
+            return isFloating ? .center : .top
         case .bluetoothConnected(let name) where AirPodsModel(deviceName: name).supportsFullAnimation:
             return .top
         case .screenshot:
             return .top
-        case .clipboard, .noInternet, .timer, .timerSetup, .shelf, .hotspot, .onboarding, .welcomeGreeting, .quickNote, .quickReminder, .accessibilityPermissionRequired, .spotifyAuthorized, .cameraMirror:
+        case .clipboard, .noInternet, .timer, .timerSetup, .shelf, .hotspot, .onboarding, .quickNote, .quickReminder, .accessibilityPermissionRequired, .spotifyAuthorized, .cameraMirror:
             return .top
         case .nowPlaying:
             return .top
@@ -305,6 +347,9 @@ struct NotchContainerView: View {
         ZStack(alignment: .top) {
             mainNotchCard
                 .offset(y: isFloating ? floatingTopOffset : 0)
+                .scaleEffect(viewModel.isScreenTransferring ? 0.72 : 1.0, anchor: .top)
+                .offset(y: viewModel.isScreenTransferring ? -10 : 0)
+                .opacity(viewModel.isScreenTransferring ? 0.0 : 1.0)
 
             // SATELLITE ORB: Flanking secondary Live Activity (120 FPS lockstep sync with notch width!)
             if viewModel.hasSecondaryLiveActivity, let secondary = viewModel.secondaryLiveActivity {
@@ -312,8 +357,8 @@ struct NotchContainerView: View {
                     content: secondary,
                     isDragging: isDraggingOrb
                 )
-                .scaleEffect(isDraggingOrb ? 0.92 : (isHoveringOrb ? 1.04 : ((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging) ? 0.35 : 1.0)))
-                .opacity((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging) ? 0.0 : 1.0)
+                .scaleEffect(isDraggingOrb ? 0.92 : (isHoveringOrb ? 1.04 : ((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging || viewModel.isScreenTransferring) ? 0.35 : 1.0)))
+                .opacity((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging || viewModel.isScreenTransferring) ? 0.0 : 1.0)
                 .offset(
                     x: (effectivePillSize.width / 2.0) + (isFloating ? 8.0 : NotchPositionCalculator.orbGap) + (SatelliteOrbView.diameter / 2.0) + orbDragOffset,
                     y: (isFloating ? floatingTopOffset : 0) + (isFloating ? ((effectivePillSize.height - SatelliteOrbView.diameter) / 2.0) : max(2.0, (topCutoutClearance - SatelliteOrbView.diameter) / 2.0))
@@ -386,8 +431,8 @@ struct NotchContainerView: View {
                     content: leftContent,
                     isDragging: isDraggingLeftOrb
                 )
-                .scaleEffect(isDraggingLeftOrb ? 0.92 : (isHoveringLeftOrb ? 1.04 : ((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging) ? 0.35 : 1.0)))
-                .opacity((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging) ? 0.0 : 1.0)
+                .scaleEffect(isDraggingLeftOrb ? 0.92 : (isHoveringLeftOrb ? 1.04 : ((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging || viewModel.isScreenTransferring) ? 0.35 : 1.0)))
+                .opacity((viewModel.isCompactWingsSwappingOut || viewModel.isMenuBarDodging || viewModel.isScreenTransferring) ? 0.0 : 1.0)
                 .offset(
                     x: -((effectivePillSize.width / 2.0) + (isFloating ? 8.0 : NotchPositionCalculator.orbGap) + (SatelliteOrbView.diameter / 2.0)) + leftOrbDragOffset,
                     y: (isFloating ? floatingTopOffset : 0) + (isFloating ? ((effectivePillSize.height - SatelliteOrbView.diameter) / 2.0) : max(2.0, (topCutoutClearance - SatelliteOrbView.diameter) / 2.0))
@@ -454,7 +499,7 @@ struct NotchContainerView: View {
     }
 
     private var mainNotchCard: some View {
-        ZStack(alignment: .top) {
+        ZStack(alignment: (isFloating && (!viewModel.isExpanded || viewModel.displayedContent == .welcomeGreeting)) ? .center : .top) {
             // Pure black Dynamic Notch silhouette sized directly to `pillSize`
             // so the path morphs at a locked 120 FPS without ZStack size jumps.
             if isFloating {
@@ -470,9 +515,9 @@ struct NotchContainerView: View {
                     )
                     .shadow(
                         color: .black.opacity((viewModel.isExpanded && !viewModel.isMenuBarDodging) ? 0.45 : (viewModel.hasActiveContent ? 0.28 : 0.0)),
-                        radius: viewModel.isExpanded ? 16 : 8,
+                        radius: viewModel.isExpanded ? 16 : (isFloating ? 6 : 8),
                         x: 0,
-                        y: viewModel.isExpanded ? 8 : 4
+                        y: viewModel.isExpanded ? 8 : (isFloating ? 2 : 4)
                     )
             } else {
                 NotchShape(
@@ -539,7 +584,7 @@ struct NotchContainerView: View {
         .frame(
             width: effectivePillSize.width,
             height: effectivePillSize.height,
-            alignment: .top
+            alignment: (isFloating && (!viewModel.isExpanded || viewModel.displayedContent == .welcomeGreeting)) ? .center : .top
         )
         .clipShape(
             isFloating
@@ -551,6 +596,12 @@ struct NotchContainerView: View {
                 ? AnyShape(DynamicIslandShape(cornerRadius: capsuleCornerRadius))
                 : AnyShape(NotchShape(cornerRadius: bottomCornerRadius, topEarRadius: topEarRadius))
         )
+        // When the notch widget is dodging the menu bar it becomes fully
+        // invisible (opacity 0, scale 0.35).  Without this modifier the SwiftUI
+        // hit-test graph still intercepts clicks in that region even though the
+        // NSWindow layer already has ignoresMouseEvents = true — adding this as
+        // a second safety net removes any residual SwiftUI-level interception.
+        .allowsHitTesting(!viewModel.isMenuBarDodging && !viewModel.isScreenTransferring)
         .simultaneousGesture(
             DragGesture(minimumDistance: 14)
                 .onEnded { value in
@@ -684,6 +735,7 @@ struct CompactNotchWingsView: View {
                 .offset(x: isShowingWings ? 0 : (isFloating ? 8 : -wingWidth * 0.78))
                 .opacity(isShowingWings ? 1.0 : 0.0)
         }
+        .offset(y: isFloating ? 1.0 : 0)
     }
 
     @ViewBuilder

@@ -33,7 +33,7 @@ struct NotchPositionCalculator {
     }
 
     /// Returns true if the screen should render as an autonomous floating Dynamic Island capsule.
-    static func isFloatingCapsule(for screen: NSScreen = NSScreen.main ?? NSScreen.screens[0]) -> Bool {
+    static func isFloatingCapsule(for screen: NSScreen) -> Bool {
         let savedMode = UserDefaults.standard.string(forKey: "notchPresentationMode") ?? PresentationMode.automatic.rawValue
         switch savedMode {
         case PresentationMode.floatingCapsule.rawValue:
@@ -45,13 +45,18 @@ struct NotchPositionCalculator {
         }
     }
 
+    @MainActor
+    static func isFloatingCapsule() -> Bool {
+        isFloatingCapsule(for: ScreenHelper.targetScreen)
+    }
+
     /// Authentic compact Dynamic Island dimensions for floating capsule mode.
     static let compactFloatingIslandSize = CGSize(width: 186.0, height: 34.0)
 
     /// Vertical clearance from the top of the display when floating.
-    /// In normal desktop space, floats 8pt below the macOS menu bar.
-    /// In full-screen space, floats 10pt below the screen top bezel.
-    static func floatingTopOffset(for screen: NSScreen = NSScreen.main ?? NSScreen.screens[0]) -> CGFloat {
+    /// In normal desktop space, floats 10pt below the macOS menu bar.
+    /// In full-screen space or when menu bar is hidden, floats 10pt below the screen top bezel.
+    static func floatingTopOffset(for screen: NSScreen) -> CGFloat {
         let positionSetting = UserDefaults.standard.string(forKey: "floatingIslandPosition") ?? "belowMenuBar"
         if positionSetting == "screenTop" {
             return 10.0
@@ -62,17 +67,22 @@ struct NotchPositionCalculator {
         let fullTop = screen.frame.maxY
         let menuBarDiff = fullTop - visibleTop
         if menuBarDiff > 0 {
-            // Desktop space with menu bar visible: float 8pt below the menu bar
-            return menuBarDiff + 8.0
+            // Desktop space with menu bar visible: float 10pt below the menu bar
+            return menuBarDiff + 10.0
         } else {
-            // Full screen mode: float 10pt below top edge
+            // Full screen mode or hidden menu bar: float 10pt below top edge
             return 10.0
         }
     }
 
+    @MainActor
+    static func floatingTopOffset() -> CGFloat {
+        floatingTopOffset(for: ScreenHelper.targetScreen)
+    }
+
     // MARK: - Notch Base Width (Hardware Cutout)
 
-    static func notchBaseWidth(for screen: NSScreen = NSScreen.main ?? NSScreen.screens[0]) -> CGFloat {
+    static func notchBaseWidth(for screen: NSScreen) -> CGFloat {
         if isFloatingCapsule(for: screen) {
             return compactFloatingIslandSize.width
         }
@@ -93,6 +103,11 @@ struct NotchPositionCalculator {
         case 20..<40: return 184.0   // MacBook Air 13.6" / 15.3"
         default:      return 160.0   // Fallback
         }
+    }
+
+    @MainActor
+    static func notchBaseWidth() -> CGFloat {
+        notchBaseWidth(for: ScreenHelper.targetScreen)
     }
 
     // MARK: - 3-State Frame Calculations

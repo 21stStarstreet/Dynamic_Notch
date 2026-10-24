@@ -147,7 +147,19 @@ struct CalendarEventItem: Identifiable, Equatable {
     var statusBadgeText: String {
         let isTurkish = Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true
         if isHappeningNow {
-            return isTurkish ? "ŞİMDİ" : "NOW"
+            let remMinutes = Int(ceil(remainingDuration / 60))
+            if remMinutes <= 0 {
+                return isTurkish ? "ŞİMDİ" : "NOW"
+            }
+            if remMinutes < 60 {
+                return isTurkish ? "\(remMinutes) DK KALDI" : "\(remMinutes) MIN LEFT"
+            }
+            let hours = remMinutes / 60
+            let mins = remMinutes % 60
+            if mins == 0 {
+                return isTurkish ? "\(hours) SAAT KALDI" : "\(hours) HR LEFT"
+            }
+            return isTurkish ? "\(hours) SA \(mins) DK KALDI" : "\(hours) HR \(mins) MIN LEFT"
         }
         if isAllDay {
             return isTurkish ? "TÜM GÜN" : "ALL DAY"
@@ -168,10 +180,15 @@ struct CalendarEventItem: Identifiable, Equatable {
         let isTurkish = Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true
         if isHappeningNow {
             let remMinutes = Int(ceil(remainingDuration / 60))
+            if remMinutes <= 0 {
+                return isTurkish ? "Şimdi" : "Now"
+            }
             if remMinutes <= 60 {
                 return isTurkish ? "\(remMinutes)dk" : "\(remMinutes)m"
             }
-            return isTurkish ? "Şimdi" : "Now"
+            let h = remMinutes / 60
+            let m = remMinutes % 60
+            return m == 0 ? (isTurkish ? "\(h)sa" : "\(h)h") : (isTurkish ? "\(h)sa\(m)d" : "\(h)h\(m)m")
         }
         if isAllDay {
             return isTurkish ? "Tüm Gün" : "All Day"

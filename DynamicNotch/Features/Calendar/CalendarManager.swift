@@ -242,15 +242,14 @@ final class CalendarManager: ObservableObject {
     }
 
     func openInCalendar(for item: CalendarEventItem) {
-        // Use Apple Calendar calshow URL scheme with reference date timestamp
-        let refTimestamp = item.startDate.timeIntervalSinceReferenceDate
-        if let calURL = URL(string: "calshow:\(refTimestamp)") {
-            NSWorkspace.shared.open(calURL)
+        // Direct Activation of macOS Calendar (Takvim)
+        if let calendarAppURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.iCal") {
+            let config = NSWorkspace.OpenConfiguration()
+            config.activates = true
+            NSWorkspace.shared.openApplication(at: calendarAppURL, configuration: config, completionHandler: nil)
         } else {
-            // Fallback: Activate Calendar application
-            if let calendarAppURL = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.apple.iCal") {
-                NSWorkspace.shared.openApplication(at: calendarAppURL, configuration: NSWorkspace.OpenConfiguration())
-            }
+            let fallbackURL = URL(fileURLWithPath: "/System/Applications/Calendar.app")
+            NSWorkspace.shared.open(fallbackURL)
         }
     }
 

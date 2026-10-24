@@ -50,8 +50,8 @@ struct WelcomeAnimatedTextView: View {
                     style: StrokeStyle(lineWidth: 4.2, lineCap: .round, lineJoin: .round)
                 )
         }
-        .frame(width: 210, height: 50)
-        .shadow(color: Color(red: 0.15, green: 0.60, blue: 1.0).opacity(0.16), radius: 5, y: 1)
+        .frame(width: 230, height: 48)
+        .shadow(color: Color(red: 0.15, green: 0.60, blue: 1.0).opacity(0.18), radius: 6, y: 0)
         .onAppear {
             isAnimating = true
             startAnimationCycle()

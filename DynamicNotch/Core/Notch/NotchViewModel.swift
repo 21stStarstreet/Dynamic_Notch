@@ -42,13 +42,17 @@ final class NotchViewModel: ObservableObject {
     @Published private(set) var isScreenLocked:   Bool       = false
     @Published private(set) var isLockScreenUnlocking: Bool  = false
     @Published private(set) var pillSize:         CGSize     = {
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = ScreenHelper.targetScreen
         return NotchPositionCalculator.hiddenFrame(for: screen).size
     }()
     @Published private(set) var expandedContentSize: CGSize  = {
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = ScreenHelper.targetScreen
         return NotchPositionCalculator.compactFrame(for: screen).size
     }()
+
+    private var activeScreen: NSScreen {
+        ScreenHelper.targetScreen
+    }
 
     /// Retains the active or outgoing expanded card content during collapse animations
     /// so SwiftUI never tears down the view on frame 0 of a dismissal.
@@ -1274,7 +1278,7 @@ final class NotchViewModel: ObservableObject {
         compactSwapWorkItem?.cancel()
         compactSwapWorkItem = nil
 
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
         let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
 
@@ -1320,7 +1324,7 @@ final class NotchViewModel: ObservableObject {
 
             windowController?.onScreenLocked()
 
-            let screen = NSScreen.main ?? NSScreen.screens[0]
+            let screen = activeScreen
             let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
             let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
 
@@ -1378,7 +1382,7 @@ final class NotchViewModel: ObservableObject {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.75) { [weak self] in
                 guard let self, self.isScreenLocked else { return }
 
-                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let screen = activeScreen
                 let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
 
                 withAnimation(SpringConfig.collapse) {
@@ -1411,7 +1415,7 @@ final class NotchViewModel: ObservableObject {
 
     // MARK: - Unified 2-Phase & Direct Window/Pill Transitions
 
-    private func effectiveTargetSize(for content: NotchState.ContentType, screen: NSScreen) -> CGSize {
+    func effectiveTargetSize(for content: NotchState.ContentType, screen: NSScreen) -> CGSize {
         var targetSize = NotchSizeCalculator.dynamicSize(for: content, screen: screen)
         if widthMultiplier != 1.0 && !content.prefersCompactPresentation {
             let baseW = NotchPositionCalculator.compactFrame(for: screen).width + 20
@@ -1438,7 +1442,7 @@ final class NotchViewModel: ObservableObject {
         pendingTransitionTarget = targetContent
         pendingTransitionExpand = targetExpanded
 
-        let screen     = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
 
         windowController?.beginRetractTransition()
@@ -1461,7 +1465,7 @@ final class NotchViewModel: ObservableObject {
             self.pendingTransitionExpand = false
             self.compactSwapWorkItem = nil
 
-            let screen      = NSScreen.main ?? NSScreen.screens[0]
+            let screen = activeScreen
             let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
             let targetSize  = self.effectiveTargetSize(for: nextContent, screen: screen)
 
@@ -1516,7 +1520,7 @@ final class NotchViewModel: ObservableObject {
         pendingTransitionTarget = nil
         pendingTransitionExpand = false
 
-        let screen     = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let targetSize = effectiveTargetSize(for: content, screen: screen)
 
         var transaction = Transaction()
@@ -1551,7 +1555,7 @@ final class NotchViewModel: ObservableObject {
         pendingTransitionTarget = nil
         pendingTransitionExpand = false
 
-        let screen      = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
         let targetSize  = effectiveTargetSize(for: content, screen: screen)
 
@@ -1586,7 +1590,7 @@ final class NotchViewModel: ObservableObject {
     /// Updates the currently expanded card in-place when the same feature emits new data
     /// (e.g. volume steps, track progress, download progress).
     private func updateExpandedInPlace(to content: NotchState.ContentType) {
-        let screen     = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let targetSize = effectiveTargetSize(for: content, screen: screen)
 
         windowController?.expand(
@@ -1609,7 +1613,7 @@ final class NotchViewModel: ObservableObject {
 
     /// Updates the currently visible compact wings in-place when the same feature emits new data.
     private func updateCompactInPlace(to content: NotchState.ContentType) {
-        let screen      = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
         let targetSize  = effectiveTargetSize(for: content, screen: screen)
 
@@ -1635,7 +1639,7 @@ final class NotchViewModel: ObservableObject {
         pendingTransitionTarget = nil
         pendingTransitionExpand = false
 
-        let screen      = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
 
         windowController?.collapseToCompact()
@@ -1675,7 +1679,7 @@ final class NotchViewModel: ObservableObject {
         dismissTimer = nil
         currentAlert = nil
 
-        let screen      = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
 
         windowController?.collapseToCompact()
@@ -1724,7 +1728,7 @@ final class NotchViewModel: ObservableObject {
         currentAlert = nil
         isHovered    = false
 
-        let screen     = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
 
         // Keep `displayedContent`, `displayedCompactActivity`, and `isNotchVisible = true`
@@ -1840,7 +1844,7 @@ final class NotchViewModel: ObservableObject {
 
     func toggleNowPlayingLyrics() {
         guard isExpanded, case .nowPlaying = displayedContent, let active = activeNowPlaying else { return }
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
 
         withAnimation(selectedExpandAnimation) {
             if NowPlayingViewModel.shared.isAudioRouteExpanded {
@@ -1860,7 +1864,7 @@ final class NotchViewModel: ObservableObject {
 
     func toggleNowPlayingAudioRoute() {
         guard isExpanded, case .nowPlaying = displayedContent, let active = activeNowPlaying else { return }
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
 
         withAnimation(selectedExpandAnimation) {
             if NowPlayingViewModel.shared.isLyricsExpanded {
@@ -1904,7 +1908,7 @@ final class NotchViewModel: ObservableObject {
     }
 
     private func performToggleVolumeAudioRoute(alert: NotchState.ContentType) {
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
 
         withAnimation(selectedExpandAnimation) {
             VolumeHUDViewModel.shared.isAudioRouteExpanded.toggle()
@@ -2002,7 +2006,7 @@ final class NotchViewModel: ObservableObject {
         hoverExitTimer?.cancel()
         hoverExitTimer = nil
 
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
 
         if let live = activeLiveActivity {
@@ -2086,7 +2090,7 @@ final class NotchViewModel: ObservableObject {
         hoverExitTimer?.cancel()
         hoverExitTimer = nil
 
-        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screen = activeScreen
         let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
 
         if let live = activeLiveActivity {
@@ -2789,6 +2793,46 @@ final class NotchViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Multi-Display Animated Hand-off
+
+    /// True while DynamicNotch is smoothly transitioning / transferring between displays.
+    @Published private(set) var isScreenTransferring: Bool = false
+
+    func setScreenTransferring(_ transferring: Bool) {
+        guard isScreenTransferring != transferring else { return }
+        withAnimation(.spring(response: transferring ? 0.18 : 0.36, dampingFraction: transferring ? 0.90 : 0.78)) {
+            self.isScreenTransferring = transferring
+        }
+    }
+
+    func cancelHoverExitTimer() {
+        hoverExitTimer?.cancel()
+        hoverExitTimer = nil
+    }
+
+    /// Adapts pill size and geometry to the newly focused screen.
+    func updateScreenGeometry(for screen: NSScreen) {
+        if isExpanded {
+            if let content = displayedContent ?? currentAlert ?? activeLiveActivity {
+                let targetSize = effectiveTargetSize(for: content, screen: screen)
+                self.expandedContentSize = targetSize
+                self.pillSize = targetSize
+            }
+        } else {
+            if hasActiveContent {
+                let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
+                withAnimation(SpringConfig.compactAppear) {
+                    self.pillSize = compactSize
+                }
+            } else {
+                let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
+                withAnimation(SpringConfig.compactAppear) {
+                    self.pillSize = hiddenSize
+                }
+            }
+        }
+    }
+
     // MARK: - Global Toggle Hide / Show (Option + Shift + H HotKey)
 
     @Published var isNotchTemporarilyHidden: Bool = false
@@ -2803,7 +2847,7 @@ final class NotchViewModel: ObservableObject {
                 emergeCompactFromIdle(for: active)
             } else {
                 // If nothing was playing, briefly show idle compact wings
-                let screen = NSScreen.main ?? NSScreen.screens[0]
+                let screen = activeScreen
                 let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
                 isNotchVisible = true
                 withAnimation(SpringConfig.compactAppear) {

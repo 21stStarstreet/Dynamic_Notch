@@ -200,6 +200,7 @@ final class NotchWindowController: NSObject {
 
     deinit {
         collapseCanvasWorkItem?.cancel()
+        screenTransferTimer?.invalidate()
         if let globalMouseMonitor { NSEvent.removeMonitor(globalMouseMonitor) }
         if let localMouseMonitor  { NSEvent.removeMonitor(localMouseMonitor) }
         if let scrollLocalMonitor { NSEvent.removeMonitor(scrollLocalMonitor) }
@@ -209,7 +210,7 @@ final class NotchWindowController: NSObject {
     // MARK: - Window Setup
 
     private func setupWindow(viewModel: NotchViewModel) {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        let screen = ScreenHelper.targetScreen
 
         let canvasFrame = NotchPositionCalculator.fixedCanvasFrame(for: screen)
         activePillSize  = NotchPositionCalculator.hiddenFrame(for: screen).size
@@ -260,14 +261,14 @@ final class NotchWindowController: NSObject {
         window.orderFrontRegardless()
     }
 
-    // MARK: - Mouse Hover Tracking (Active ONLY when content is present)
+    // MARK: - Mouse Hover & Active Display Tracking
 
     private func setupMouseHoverMonitors() {
         globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(
             matching: [.mouseMoved, .leftMouseDragged, .leftMouseUp]
-        ) { [weak self] _ in
+        ) { [weak self] event in
             MainActor.assumeIsolated {
-                self?.evaluateMouseHover()
+                self?.handleTrackedMouseEvent(event)
             }
         }
 
@@ -275,7 +276,7 @@ final class NotchWindowController: NSObject {
             matching: [.mouseMoved, .leftMouseDragged, .leftMouseUp]
         ) { [weak self] event in
             MainActor.assumeIsolated {
-                self?.evaluateMouseHover()
+                self?.handleTrackedMouseEvent(event)
             }
             return event
         }
@@ -287,6 +288,111 @@ final class NotchWindowController: NSObject {
                 self?.handleScrollOrSwipeEvent(event)
             }
             return event
+        }
+    }
+
+    private func handleTrackedMouseEvent(_ event: NSEvent) {
+        checkScreenTransfer(for: NSEvent.mouseLocation, isClick: event.type == .leftMouseUp)
+        // Prevent false hover-exit collapse on the old screen while dwelling or transferring to a new display
+        guard pendingScreenCandidate == nil, !isTransferringScreen else { return }
+        evaluateMouseHover()
+    }
+
+    // MARK: - Smart Display Auto-Detection & Fluid Hand-off
+
+    private var isTransferringScreen: Bool = false
+    private var pendingScreenCandidate: NSScreen?
+    private var screenTransferTimer: Timer?
+
+    private func checkScreenTransfer(for mouseLoc: NSPoint, isClick: Bool) {
+        // Do not interrupt while an animated hand-off is already in flight
+        guard !isTransferringScreen else { return }
+
+        // Do not transfer while user is dragging a control on the notch
+        if isMouseInside && (NSEvent.pressedMouseButtons & 1) != 0 { return }
+
+        guard let screenUnderCursor = ScreenHelper.screen(containing: mouseLoc) else { return }
+        let currentTargetScreen = ScreenHelper.targetScreen
+
+        guard screenUnderCursor != currentTargetScreen else {
+            // Mouse returned to current screen -> cancel any pending candidate dwell
+            if pendingScreenCandidate != nil {
+                screenTransferTimer?.invalidate()
+                screenTransferTimer = nil
+                pendingScreenCandidate = nil
+            }
+            return
+        }
+
+        // If the user clicked on the new display, transfer immediately without dwell lag!
+        if isClick {
+            screenTransferTimer?.invalidate()
+            screenTransferTimer = nil
+            pendingScreenCandidate = nil
+            viewModel?.cancelHoverExitTimer()
+            executeScreenTransfer(to: screenUnderCursor)
+            return
+        }
+
+        // Otherwise apply Apple-grade 200ms dwell/hysteresis protection:
+        // prevents unwanted flickering when cursor merely brushes a screen edge.
+        if pendingScreenCandidate != screenUnderCursor {
+            screenTransferTimer?.invalidate()
+            pendingScreenCandidate = screenUnderCursor
+            viewModel?.cancelHoverExitTimer()
+            screenTransferTimer = Timer.scheduledTimer(withTimeInterval: 0.20, repeats: false) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self = self, let target = self.pendingScreenCandidate else { return }
+                    self.pendingScreenCandidate = nil
+                    self.executeScreenTransfer(to: target)
+                }
+            }
+        }
+    }
+
+    private func executeScreenTransfer(to newScreen: NSScreen) {
+        guard newScreen != ScreenHelper.targetScreen, !isTransferringScreen else { return }
+        isTransferringScreen = true
+        pendingScreenCandidate = nil
+        screenTransferTimer?.invalidate()
+        screenTransferTimer = nil
+        viewModel?.cancelHoverExitTimer()
+
+        // Phase 1: Dematerialize (Smoothly scale down and fade out on current screen)
+        viewModel?.setScreenTransferring(true)
+
+        // Phase 2: Silent Relocation while invisible (150ms)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+            guard let self = self else { return }
+
+            // 1. Commit new target screen
+            ScreenHelper.updateTargetScreen(newScreen)
+
+            // 2. Move NSWindow canvas frame silently to new display's coordinate space
+            let canvasFrame = NotchPositionCalculator.fixedCanvasFrame(for: newScreen)
+            self.window.setFrame(canvasFrame, display: false)
+            SkyLightSpaceBridge.shared.attachToLockScreenSpace(windowNumber: self.window.windowNumber)
+            self.window.orderFrontRegardless()
+
+            // 3. Update active pill size for the new display form-factor
+            if !self.isInteractive {
+                self.activePillSize = NotchPositionCalculator.hiddenFrame(for: newScreen).size
+            } else if !self.isWindowExpanded {
+                self.activePillSize = NotchPositionCalculator.compactFrame(for: newScreen).size
+            } else if let content = self.viewModel?.displayedContent ?? self.viewModel?.currentAlert ?? self.viewModel?.activeLiveActivity {
+                let targetSize = self.viewModel?.effectiveTargetSize(for: content, screen: newScreen) ?? self.activePillSize
+                self.activePillSize = targetSize
+                self.hoverRetentionSize = targetSize
+            }
+            self.viewModel?.updateScreenGeometry(for: newScreen)
+
+            // Phase 3: Materialize (Fluid Apple spring entrance on the new screen)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
+                guard let self = self else { return }
+                self.viewModel?.setScreenTransferring(false)
+                self.isTransferringScreen = false
+                self.evaluateMouseHover()
+            }
         }
     }
 
@@ -369,7 +475,7 @@ final class NotchWindowController: NSObject {
     }
 
     func isMouseWithinExpandedRect(of size: CGSize) -> Bool {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return false }
+        let screen = ScreenHelper.targetScreen
         let mouseLoc = NSEvent.mouseLocation
         let envelopeSize = CGSize(
             width: max(size.width, hoverRetentionSize.width),
@@ -383,7 +489,7 @@ final class NotchWindowController: NSObject {
     /// Checks whether the mouse cursor is currently resting over the physical notch
     /// or compact wings area (top ~38pt of the screen, horizontally centered).
     func isMouseOverPhysicalNotch() -> Bool {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return false }
+        let screen = ScreenHelper.targetScreen
         let mouseLoc = NSEvent.mouseLocation
 
         if NotchPositionCalculator.isFloatingCapsule(for: screen) {
@@ -427,7 +533,7 @@ final class NotchWindowController: NSObject {
             }
             return
         }
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        let screen = ScreenHelper.targetScreen
 
         // Keep hover and hit-testing active while the user is dragging (e.g. volume slider or satellite orb)
         if isMouseInside && (NSEvent.pressedMouseButtons & 1) != 0 {
@@ -465,12 +571,31 @@ final class NotchWindowController: NSObject {
             let menuBarBottomY = screen.frame.maxY - menuBarHeight
             let isAtTopMenuBarHeight = mouseLoc.y >= (menuBarBottomY - 2.0)
 
-            let dynamicLeftBoundary = clickHitRect.minX
-            let dynamicRightBoundary = clickHitRect.maxX
+            let isOverSystemMenuBar: Bool
+            if viewModel?.isExpanded == true {
+                // When expanded, the notch is an active, open interactive overlay.
+                // If the cursor is anywhere inside the expanded card's border/hit area,
+                // NEVER dodge. The user is actively interacting with the expanded widget.
+                if insideClickRect {
+                    isOverSystemMenuBar = false
+                } else {
+                    let isOutsideExpandedLeft = mouseLoc.x < (clickHitRect.minX - 4.0)
+                    let isOutsideExpandedRight = mouseLoc.x > (clickHitRect.maxX + 4.0)
+                    isOverSystemMenuBar = isAtTopMenuBarHeight && (isOutsideExpandedLeft || isOutsideExpandedRight)
+                }
+            } else {
+                // In compact mode: wings sit at menu bar height beside the camera cutout.
+                // Any cursor movement at menu bar height outside the physical camera cutout
+                // must dodge so system menu bar items remain clickable.
+                let notchBaseW   = NotchPositionCalculator.notchBaseWidth(for: screen)
+                let notchCenterX = screen.frame.midX + screen.frame.origin.x
+                let dodgeLeft    = notchCenterX - notchBaseW / 2.0 - 8.0
+                let dodgeRight   = notchCenterX + notchBaseW / 2.0 + 8.0
 
-            let isOutsideLeft = mouseLoc.x < (dynamicLeftBoundary - 4.0)
-            let isOutsideRight = mouseLoc.x > (dynamicRightBoundary + 4.0)
-            let isOverSystemMenuBar = isAtTopMenuBarHeight && !insideClickRect && (isOutsideLeft || isOutsideRight)
+                let isOutsideLeft  = mouseLoc.x < (dodgeLeft  - 4.0)
+                let isOutsideRight = mouseLoc.x > (dodgeRight + 4.0)
+                isOverSystemMenuBar = isAtTopMenuBarHeight && (isOutsideLeft || isOutsideRight)
+            }
 
             if isOverSystemMenuBar {
                 if !window.ignoresMouseEvents {
@@ -489,6 +614,7 @@ final class NotchWindowController: NSObject {
         } else {
             viewModel?.setMenuBarDodging(false)
         }
+
 
         let hoverInside: Bool
         if isMouseInside && hoverRetentionSize != .zero {
@@ -527,7 +653,7 @@ final class NotchWindowController: NSObject {
     /// before emerging the next action. Preserves the current hover envelope so the temporary
     /// retraction into `hiddenSize` does not trigger a false mouse-exit event.
     func beginRetractTransition() {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        let screen = ScreenHelper.targetScreen
         collapseCanvasWorkItem?.cancel()
         collapseCanvasWorkItem = nil
 
@@ -570,7 +696,7 @@ final class NotchWindowController: NSObject {
 
     /// State 2: Show compact side wings (LiveActivity or compact alert active, mouse not hovering).
     func collapseToCompact(completion: (() -> Void)? = nil) {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        let screen = ScreenHelper.targetScreen
         collapseCanvasWorkItem?.cancel()
         collapseCanvasWorkItem = nil
 
@@ -584,7 +710,7 @@ final class NotchWindowController: NSObject {
 
     /// State 1: Hide completely behind the physical notch (no active action).
     func hideToIdle(completion: (() -> Void)? = nil) {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        let screen = ScreenHelper.targetScreen
         collapseCanvasWorkItem?.cancel()
         collapseCanvasWorkItem = nil
 
@@ -667,7 +793,8 @@ final class NotchWindowController: NSObject {
     }
 
     @objc func screenParametersChanged() {
-        guard let screen = NSScreen.main ?? NSScreen.screens.first else { return }
+        ScreenHelper.refreshTargetScreen()
+        let screen = ScreenHelper.targetScreen
         let canvasFrame = NotchPositionCalculator.fixedCanvasFrame(for: screen)
         if window.frame != canvasFrame {
             window.setFrame(canvasFrame, display: true)

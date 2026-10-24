@@ -9,16 +9,22 @@ import SwiftUI
 struct WelcomeTextShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let boundsW: CGFloat = 383.3280
-        let boundsH: CGFloat = 87.5750
-        let scale = min(rect.width / boundsW, rect.height / boundsH)
-        let offsetX = rect.midX - (boundsW * scale) / 2.0
-        let offsetY = rect.midY - (boundsH * scale) / 2.0
+        let minX: CGFloat = -189.44
+        let minY: CGFloat = -48.74
+        let boundsW: CGFloat = 384.32
+        let boundsH: CGFloat = 87.59
+
+        // Apple Precision Inset: prevents any stroke lineWidth or glow bloom from clipping
+        let drawRect = rect.insetBy(dx: 4.0, dy: 4.0)
+
+        let scale = min(drawRect.width / boundsW, drawRect.height / boundsH)
+        let offsetX = drawRect.midX - (boundsW * scale) / 2.0
+        let offsetY = drawRect.midY - (boundsH * scale) / 2.0
 
         func pt(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
             CGPoint(
-                x: offsetX + (x - (-188.4520)) * scale,
-                y: offsetY + (y - (-48.7370)) * scale
+                x: offsetX + (x - minX) * scale,
+                y: offsetY + (y - minY) * scale
             )
         }
 
