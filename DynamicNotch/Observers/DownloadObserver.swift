@@ -28,6 +28,7 @@ final class DownloadObserver: ObservableObject {
         in: .userDomainMask
     ).first
 
+    private let downloadScanQueue = DispatchQueue(label: "com.dynamicnotch.downloads.scanner", qos: .utility)
     private var directoryFileDescriptor: Int32 = -1
     private var directorySource: DispatchSourceFileSystemObject?
     private var pollTimer: Timer?
@@ -165,7 +166,7 @@ final class DownloadObserver: ObservableObject {
         let source = DispatchSource.makeFileSystemObjectSource(
             fileDescriptor: directoryFileDescriptor,
             eventMask: [.write, .extend, .attrib, .rename],
-            queue: DispatchQueue.main
+            queue: downloadScanQueue
         )
 
         source.setEventHandler { [weak self] in
@@ -185,38 +186,42 @@ final class DownloadObserver: ObservableObject {
     // MARK: - Scanning & Progress Calculation
 
     private func scanDownloadsDirectory() {
-        guard let downloadsURL else { return }
+        downloadScanQueue.async { [weak self] in
+            guard let self, let downloadsURL = self.downloadsURL else { return }
 
-        let fm = FileManager.default
-        guard let urls = try? fm.contentsOfDirectory(
-            at: downloadsURL,
-            includingPropertiesForKeys: [.fileSizeKey, .totalFileSizeKey, .isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        ) else { return }
+            let fm = FileManager.default
+            guard let urls = try? fm.contentsOfDirectory(
+                at: downloadsURL,
+                includingPropertiesForKeys: [.fileSizeKey, .totalFileSizeKey, .isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            ) else { return }
 
-        var items: [DownloadItem] = []
+            var items: [DownloadItem] = []
 
-        for fileURL in urls {
-            let ext = fileURL.pathExtension.lowercased()
+            for fileURL in urls {
+                let ext = fileURL.pathExtension.lowercased()
 
-            if ext == "download" {
-                if let safariItem = parseSafariDownloadBundle(at: fileURL) {
-                    items.append(safariItem)
-                }
-            } else if ext == "crdownload" || ext == "part" {
-                if let browserItem = parsePartialDownloadFile(at: fileURL) {
-                    items.append(browserItem)
+                if ext == "download" {
+                    if let safariItem = self.parseSafariDownloadBundle(at: fileURL) {
+                        items.append(safariItem)
+                    }
+                } else if ext == "crdownload" || ext == "part" {
+                    if let browserItem = self.parsePartialDownloadFile(at: fileURL) {
+                        items.append(browserItem)
+                    }
                 }
             }
+
+            // Clean up stale speed tracking and total byte cache entries
+            let activeIDs = Set(items.map { $0.id })
+            self.speedTracker = self.speedTracker.filter { activeIDs.contains($0.key) }
+            self.knownTotalBytes = self.knownTotalBytes.filter { activeIDs.contains($0.key) }
+
+            DispatchQueue.main.async {
+                self.activeDownloads = items
+                self.updatePollingState(hasActiveDownloads: !items.isEmpty)
+            }
         }
-
-        // Clean up stale speed tracking and total byte cache entries
-        let activeIDs = Set(items.map { $0.id })
-        speedTracker = speedTracker.filter { activeIDs.contains($0.key) }
-        knownTotalBytes = knownTotalBytes.filter { activeIDs.contains($0.key) }
-
-        activeDownloads = items
-        updatePollingState(hasActiveDownloads: !items.isEmpty)
     }
 
     // MARK: - Browser Total Size Resolvers

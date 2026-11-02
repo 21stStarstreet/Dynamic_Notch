@@ -120,6 +120,7 @@ final class MediaObserver: ObservableObject, @unchecked Sendable {
     private var mrGetNowPlayingApplicationIsPlaying: MRGetIsPlayingFunc?
     private var mrGetNowPlayingApplicationPlaybackState: MRGetPlaybackStateFunc?
     private var mrSendCommand: MRSendCommandFunc?
+    private let mediaWorkerQueue = DispatchQueue(label: "com.dynamicnotch.media.worker", qos: .userInitiated)
 
     // MARK: - Init / Deinit
 
@@ -250,10 +251,10 @@ final class MediaObserver: ObservableObject, @unchecked Sendable {
             return
         }
 
-        mrGetPID(DispatchQueue.main) { [weak self] pid in
+        mrGetPID(mediaWorkerQueue) { [weak self] pid in
             guard let self else { return }
 
-            mrGetInfo(DispatchQueue.main) { [weak self] dict in
+            mrGetInfo(mediaWorkerQueue) { [weak self] dict in
                 guard let self else { return }
                 guard let dict = dict, !dict.isEmpty else {
                     // Never let an empty MediaRemote dictionary overwrite Spotify or Apple Music!
@@ -276,7 +277,7 @@ final class MediaObserver: ObservableObject, @unchecked Sendable {
                 }
 
                 if let getPlaybackState = self.mrGetNowPlayingApplicationPlaybackState {
-                    getPlaybackState(DispatchQueue.main) { [weak self] stateCode in
+                    getPlaybackState(self.mediaWorkerQueue) { [weak self] stateCode in
                         guard let self else { return }
                         // stateCode: 1 = Playing, 2 = Paused, 3 = Stopped
                         let isStatePlaying: Bool? = (stateCode == 1) ? true : (stateCode == 2 || stateCode == 3 ? false : nil)
@@ -284,7 +285,7 @@ final class MediaObserver: ObservableObject, @unchecked Sendable {
                         if let isStatePlaying {
                             self.processMediaRemoteDictionary(dict, pid: pid, isSystemPlaying: isStatePlaying, isInitial: isInitial)
                         } else if let getIsPlaying = self.mrGetNowPlayingApplicationIsPlaying {
-                            getIsPlaying(DispatchQueue.main) { [weak self] isSystemPlaying in
+                            getIsPlaying(self.mediaWorkerQueue) { [weak self] isSystemPlaying in
                                 self?.processMediaRemoteDictionary(dict, pid: pid, isSystemPlaying: isSystemPlaying, isInitial: isInitial)
                             }
                         } else {
@@ -292,7 +293,7 @@ final class MediaObserver: ObservableObject, @unchecked Sendable {
                         }
                     }
                 } else if let getIsPlaying = self.mrGetNowPlayingApplicationIsPlaying {
-                    getIsPlaying(DispatchQueue.main) { [weak self] isSystemPlaying in
+                    getIsPlaying(self.mediaWorkerQueue) { [weak self] isSystemPlaying in
                         self?.processMediaRemoteDictionary(dict, pid: pid, isSystemPlaying: isSystemPlaying, isInitial: isInitial)
                     }
                 } else {

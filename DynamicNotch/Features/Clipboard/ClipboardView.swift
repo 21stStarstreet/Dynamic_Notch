@@ -423,8 +423,10 @@ struct ClipboardItemCard: View {
             return provider
 
         case .text(let text):
+            // Plain text only, with NO suggested file name: a "text.txt" name forced target apps and
+            // Finder to write a .txt file. Without it, apps paste the text itself and Finder creates
+            // a native text clipping, exactly like dragging selected text from any macOS app.
             let provider = NSItemProvider(object: text as NSString)
-            provider.suggestedName = "text.txt"
             if let textData = text.data(using: .utf8) {
                 provider.registerDataRepresentation(forTypeIdentifier: UTType.utf8PlainText.identifier, visibility: .all) { completion in
                     completion(textData, nil)

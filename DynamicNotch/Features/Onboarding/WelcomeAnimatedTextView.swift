@@ -54,7 +54,11 @@ struct WelcomeAnimatedTextView: View {
         .shadow(color: Color(red: 0.15, green: 0.60, blue: 1.0).opacity(0.18), radius: 6, y: 0)
         .onAppear {
             isAnimating = true
-            startAnimationCycle()
+            strokeProgress = 0.0
+            DispatchQueue.main.async {
+                guard self.isAnimating else { return }
+                self.startAnimationCycle()
+            }
         }
         .onDisappear {
             isAnimating = false

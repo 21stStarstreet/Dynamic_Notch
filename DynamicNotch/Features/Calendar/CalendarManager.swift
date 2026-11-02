@@ -142,44 +142,49 @@ final class CalendarManager: ObservableObject {
     func fetchEvents() {
         guard hasAccess else { return }
 
-        let calendar = Calendar.current
-        let now = Date()
-        let startOfDay = calendar.startOfDay(for: now)
-        guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else { return }
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let calendar = Calendar.current
+            let now = Date()
+            let startOfDay = calendar.startOfDay(for: now)
+            guard let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay) else { return }
 
-        // Look back 30 minutes to catch meetings that just started
-        let searchStart = now.addingTimeInterval(-1800)
-        let predicate = eventStore.predicateForEvents(withStart: searchStart, end: endOfDay, calendars: nil)
-        let rawEvents = eventStore.events(matching: predicate)
+            // Look back 30 minutes to catch meetings that just started
+            let searchStart = now.addingTimeInterval(-1800)
+            let predicate = self.eventStore.predicateForEvents(withStart: searchStart, end: endOfDay, calendars: nil)
+            let rawEvents = self.eventStore.events(matching: predicate)
 
-        let parsedItems: [CalendarEventItem] = rawEvents
-            .filter { !$0.isAllDay || $0.startDate >= startOfDay }
-            .filter { $0.endDate > now.addingTimeInterval(-60) } // Has not ended more than 1 min ago
-            .map { ekEvent in
-                let color: Color
-                if let cgColor = ekEvent.calendar.cgColor {
-                    color = Color(cgColor: cgColor)
-                } else {
-                    color = Color(red: 0.22, green: 0.60, blue: 1.0)
+            let parsedItems: [CalendarEventItem] = rawEvents
+                .filter { !$0.isAllDay || $0.startDate >= startOfDay }
+                .filter { $0.endDate > now.addingTimeInterval(-60) } // Has not ended more than 1 min ago
+                .map { ekEvent in
+                    let color: Color
+                    if let cgColor = ekEvent.calendar.cgColor {
+                        color = Color(cgColor: cgColor)
+                    } else {
+                        color = Color(red: 0.22, green: 0.60, blue: 1.0)
+                    }
+
+                    return CalendarEventItem(
+                        id: ekEvent.eventIdentifier ?? UUID().uuidString,
+                        title: ekEvent.title ?? "İsimsiz Etkinlik",
+                        startDate: ekEvent.startDate,
+                        endDate: ekEvent.endDate,
+                        isAllDay: ekEvent.isAllDay,
+                        location: ekEvent.location,
+                        notes: ekEvent.notes,
+                        originalURL: ekEvent.url,
+                        calendarTitle: ekEvent.calendar.title,
+                        calendarColor: color
+                    )
                 }
+                .sorted { $0.startDate < $1.startDate }
 
-                return CalendarEventItem(
-                    id: ekEvent.eventIdentifier ?? UUID().uuidString,
-                    title: ekEvent.title ?? "İsimsiz Etkinlik",
-                    startDate: ekEvent.startDate,
-                    endDate: ekEvent.endDate,
-                    isAllDay: ekEvent.isAllDay,
-                    location: ekEvent.location,
-                    notes: ekEvent.notes,
-                    originalURL: ekEvent.url,
-                    calendarTitle: ekEvent.calendar.title,
-                    calendarColor: color
-                )
+            DispatchQueue.main.async {
+                self.todayEvents = parsedItems
+                self.updateActiveAndUpcomingState()
             }
-            .sorted { $0.startDate < $1.startDate }
-
-        self.todayEvents = parsedItems
-        updateActiveAndUpcomingState()
+        }
     }
 
     // MARK: - Active & Upcoming State Computation

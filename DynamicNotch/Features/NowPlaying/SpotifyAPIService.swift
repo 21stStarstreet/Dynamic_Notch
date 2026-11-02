@@ -70,18 +70,9 @@ final class SpotifyAPIService: NSObject, ObservableObject, ASWebAuthenticationPr
     private let authorizeEndpoint = URL(string: "https://accounts.spotify.com/authorize")!
 
     private func logDebug(_ message: String) {
+        #if DEBUG
         NSLog("[DynamicNotch Spotify] %@", message)
-        let logLine = "[\(Date())] \(message)\n"
-        let logURL = URL(fileURLWithPath: "/Users/mustafatiras/Projects/DynamicNotch/spotify_debug.log")
-        if let handle = try? FileHandle(forWritingTo: logURL) {
-            handle.seekToEndOfFile()
-            if let data = logLine.data(using: .utf8) {
-                handle.write(data)
-            }
-            try? handle.close()
-        } else {
-            try? logLine.write(to: logURL, atomically: true, encoding: .utf8)
-        }
+        #endif
     }
 
     // MARK: - Initialization

@@ -62,11 +62,12 @@ final class SatelliteOrbWindowController: NSObject {
         panel.ignoresMouseEvents      = true   // Fully transparent to cursor; purely a visual status indicator
         panel.acceptsMouseMovedEvents = false
         panel.isReleasedWhenClosed    = false
-        panel.canHide                 = false
+        panel.canHide                 = true
         panel.hidesOnDeactivate       = false
         panel.collectionBehavior      = [
             .canJoinAllSpaces,
             .stationary,
+            .transient,
             .ignoresCycle,
             .fullScreenAuxiliary
         ]
@@ -75,9 +76,10 @@ final class SatelliteOrbWindowController: NSObject {
         let hostingView = NotchHostingView(rootView: rootView)
         hostingView.autoresizingMask = [.width, .height]
         panel.contentView = hostingView
-
-        SkyLightSpaceBridge.shared.attachToLockScreenSpace(windowNumber: panel.windowNumber)
         panel.orderFrontRegardless()
+        if panel.windowNumber > 0 {
+            SkyLightSpaceBridge.shared.attachToLockScreenSpace(windowNumber: panel.windowNumber)
+        }
     }
 
     // MARK: - Position Updating

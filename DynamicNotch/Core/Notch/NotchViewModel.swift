@@ -101,6 +101,9 @@ final class NotchViewModel: ObservableObject {
     /// Toggled when the user drags the satellite orb towards the center to swap primary & secondary activities
     @Published var isLiveActivitySwapped: Bool = false
 
+    /// Rotational cycle index for concurrent LiveActivities across Main Notch (0), Right Orb (1), and Left Orb (2)
+    @Published private(set) var liveActivityCycleIndex: Int = 0
+
     // MARK: - Satellite Orb State (Concurrent HUDs & Live Activities)
 
     /// Ephemeral alert actively displayed in the Left Satellite Orb during an overlap collision
@@ -116,37 +119,71 @@ final class NotchViewModel: ObservableObject {
         activeOnboardingStep != nil || currentAlert == .welcomeGreeting || NotchOnboardingManager.shared.isGreetingOrOnboardingActive
     }
 
-    /// Left Satellite Content:
-    /// 1. Ephemeral collision alert (HUD) takes top priority (supersedes displaced live activity).
-    /// 2. When Onboarding or Welcome Greeting is occupying the main notch:
-    ///    - If the Right Orb is already displaying an alert, any active LiveActivity steps into the Left Orb.
-    ///    - If the Right Orb is displaying the primary LiveActivity and a 2nd concurrent LiveActivity exists ("dolarsa solda da"),
-    ///      the 2nd activity is displayed in the Left Satellite Orb.
-    /// 3. If a transient alert is occupying the main notch AND 2 or more persistent live activities exist:
-    ///    The secondary persistent activity is displayed in the Left Satellite Orb (while primary rests in Right Orb).
+    /// Evaluates whether the main notch is currently occupied by a non-live element:
+    /// (Alert, Welcome Greeting, Onboarding, Quick Action Menu, or Camera Mirror).
+    /// In this state, persistent LiveActivities are displaced to satellite orbs.
+    var isMainOccupiedByNonLiveContent: Bool {
+        if let visible = currentVisibleContent {
+            return !visible.isLiveActivity
+        }
+        if isShowingOnboardingOrGreeting { return true }
+        if isPresentingAlert { return true }
+        return false
+    }
+
+    /// Evaluates whether the Right Satellite slot is currently occupied
+    /// by an active right alert or a background/secondary LiveActivity.
+    var isRightSatelliteOccupied: Bool {
+        if rightSatelliteAlert != nil {
+            return true
+        }
+        return secondaryLiveActivity != nil
+    }
+
+    /// Left Satellite Content (Slot 3 - Left Flank):
+    /// 1. Ephemeral collision alert assigned to the left satellite takes top priority.
+    /// 2. When the main notch is occupied by non-live content (Greeting, Alert, Menu, Camera Mirror):
+    ///    - If the Right Orb is occupied by an alert, primary LiveActivity steps into Left Orb.
+    ///    - If 2 or more LiveActivities exist, the 2nd one steps into the Left Orb.
+    /// 3. In normal operation (no non-live content):
+    ///    - Tertiary LiveActivity steps into Left Orb ONLY if 3 or more concurrent LiveActivities exist!
+    /// Mutual exclusivity: NEVER duplicates what is already in the main notch or right satellite!
     var leftSatelliteContent: NotchState.ContentType? {
+        let mainKind = currentVisibleContent?.kindIdentifier
+        let rightKind = secondaryLiveActivity?.kindIdentifier
+
         if let alert = leftSatelliteAlert {
+            if alert.kindIdentifier == mainKind || alert.kindIdentifier == rightKind {
+                return nil
+            }
             return alert
         }
 
-        if isShowingOnboardingOrGreeting {
-            let candidates = sortedLiveActivities
+        let candidates = sortedLiveActivities
+        guard !candidates.isEmpty else { return nil }
+
+        if isMainOccupiedByNonLiveContent {
             if rightSatelliteAlert != nil {
-                guard !candidates.isEmpty else { return nil }
-                return isLiveActivitySwapped && candidates.count >= 2 ? candidates[1] : candidates[0]
+                let primary = isLiveActivitySwapped && candidates.count >= 2 ? candidates[1] : candidates[0]
+                if primary.kindIdentifier == mainKind || primary.kindIdentifier == rightKind {
+                    return nil
+                }
+                return primary
             }
-
             guard candidates.count >= 2 else { return nil }
-            return isLiveActivitySwapped ? candidates[0] : candidates[1]
+            let second = isLiveActivitySwapped ? candidates[0] : candidates[1]
+            if second.kindIdentifier == mainKind || second.kindIdentifier == rightKind {
+                return nil
+            }
+            return second
         }
 
-        if isPresentingAlert {
-            let candidates = sortedLiveActivities
-            guard candidates.count >= 2 else { return nil }
-            return isLiveActivitySwapped ? candidates[0] : candidates[1]
+        guard candidates.count >= 3 else { return nil }
+        let tertiary = candidates[2]
+        if tertiary.kindIdentifier == mainKind || tertiary.kindIdentifier == rightKind {
+            return nil
         }
-
-        return nil
+        return tertiary
     }
 
     /// True when the Left Satellite Orb should be visible flanking the left side of the notch
@@ -194,6 +231,38 @@ final class NotchViewModel: ObservableObject {
         withAnimation(.spring(response: 0.28, dampingFraction: 0.82)) {
             rightSatelliteAlert = nil
         }
+        consolidateSatelliteOrbs()
+    }
+
+    /// Automatically consolidates satellite orbs so that a single secondary task is NEVER
+    /// stranded on the left side while the right slot is empty.
+    func consolidateSatelliteOrbs() {
+        guard let leftAlert = leftSatelliteAlert, rightSatelliteAlert == nil else { return }
+        if !isRightSatelliteOccupied {
+            leftSatelliteDismissTimer?.cancel()
+            leftSatelliteDismissTimer = nil
+            leftSatelliteAlert = nil
+            let duration = leftAlert.defaultDuration ?? 2.2
+            showRightSatellite(content: leftAlert, duration: duration)
+        }
+    }
+
+    /// Routes an incoming satellite alert to the Right Satellite first (Slot 2);
+    /// only falls back to the Left Satellite (Slot 3) when the right slot is occupied.
+    func routeSatelliteAlert(content: NotchState.ContentType, duration: TimeInterval = 2.2) {
+        if let rightAlert = rightSatelliteAlert, rightAlert.kindIdentifier == content.kindIdentifier {
+            showRightSatellite(content: content, duration: duration)
+            return
+        }
+        if let leftAlert = leftSatelliteAlert, leftAlert.kindIdentifier == content.kindIdentifier {
+            showLeftSatellite(content: content, duration: duration)
+            return
+        }
+        if isRightSatelliteOccupied {
+            showLeftSatellite(content: content, duration: duration)
+        } else {
+            showRightSatellite(content: content, duration: duration)
+        }
     }
 
     func promoteLeftSatelliteToMainNotch() {
@@ -214,16 +283,38 @@ final class NotchViewModel: ObservableObject {
             presentAlert(alert)
             return
         }
+
         if isPresentingAlert {
             dismissCurrentAlert()
             withAnimation(.spring(response: 0.38, dampingFraction: 0.74)) {
-                isLiveActivitySwapped.toggle()
+                let candidates = sortedLiveActivities
+                if candidates.count >= 2 {
+                    liveActivityCycleIndex = (liveActivityCycleIndex + 1) % candidates.count
+                    isLiveActivitySwapped = (liveActivityCycleIndex % 2 != 0)
+                }
                 if let newPrimary = activeLiveActivity {
                     displayedCompactActivity = newPrimary
                 }
             }
             NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+            return
         }
+
+        let candidates = sortedLiveActivities
+        guard candidates.count >= 3 else { return }
+
+        withAnimation(.spring(response: 0.38, dampingFraction: 0.74)) {
+            liveActivityCycleIndex = (liveActivityCycleIndex + 2) % candidates.count
+            isLiveActivitySwapped = (liveActivityCycleIndex % 2 != 0)
+            if let newPrimary = activeLiveActivity {
+                if isExpanded {
+                    updateExpandedInPlace(to: newPrimary)
+                } else {
+                    displayedCompactActivity = newPrimary
+                }
+            }
+        }
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
     }
 
     private var sortedLiveActivities: [NotchState.ContentType] {
@@ -232,52 +323,71 @@ final class NotchViewModel: ObservableObject {
             .sorted(by: { $0.priority > $1.priority })
     }
 
-    var activeLiveActivity: NotchState.ContentType? {
+    private func liveActivity(atSlot slot: Int) -> NotchState.ContentType? {
         let candidates = sortedLiveActivities
         guard !candidates.isEmpty else { return nil }
-        if isLiveActivitySwapped && candidates.count >= 2 {
-            return candidates[1]
-        }
-        return candidates[0]
+        let count = candidates.count
+        guard slot < count else { return nil }
+        let index = (liveActivityCycleIndex + slot) % count
+        return candidates[index]
+    }
+
+    var activeLiveActivity: NotchState.ContentType? {
+        liveActivity(atSlot: 0)
     }
 
     /// True when an ephemeral alert/HUD (e.g. Volume, Brightness, Battery, Bluetooth, etc.) is actively presenting
     var isPresentingAlert: Bool {
-        currentAlert?.isAlert == true
+        guard let alert = currentAlert, alert.isAlert else { return false }
+        if let visible = currentVisibleContent, visible.isLiveActivity {
+            return false
+        }
+        return true
     }
 
-    /// Right Satellite Orb Content:
-    /// 1. Ephemeral alert actively displayed in the Right Satellite Orb (e.g. during Onboarding).
-    /// 2. When Onboarding is occupying the main notch:
-    ///    The dominant persistent LiveActivity (e.g. Now Playing, Timer) rests in the Right Satellite Orb.
-    /// 3. When an instant alert is actively displayed in the main notch:
-    ///    The dominant persistent LiveActivity steps aside to rest in the Right Satellite Orb.
-    /// 4. When the main notch is displaying a primary LiveActivity and a secondary exists:
-    ///    The secondary LiveActivity rests in the Right Satellite Orb.
+    /// Right Satellite Orb Content (Slot 2 - Right Flank):
+    /// 1. Ephemeral alert actively displayed in the Right Satellite Orb.
+    /// 2. When the main notch is occupied by non-live content (Greeting, Alert, Menu, Camera Mirror):
+    ///    The dominant persistent LiveActivity rests in the Right Satellite Orb.
+    /// 3. In normal operation (no non-live content):
+    ///    A secondary LiveActivity rests in the Right Satellite Orb ONLY if at least 2 distinct concurrent LiveActivities exist!
+    /// Mutual exclusivity: NEVER duplicates what is already displayed in the main notch!
     var secondaryLiveActivity: NotchState.ContentType? {
+        let mainKind = currentVisibleContent?.kindIdentifier
+
         if let alert = rightSatelliteAlert {
+            if alert.kindIdentifier == mainKind {
+                return nil
+            }
             return alert
         }
 
-        if isShowingOnboardingOrGreeting {
-            let candidates = sortedLiveActivities
-            guard !candidates.isEmpty else { return nil }
-            if isLiveActivitySwapped && candidates.count >= 2 {
-                return candidates[1]
-            }
-            return candidates[0]
-        }
-
-        if isPresentingAlert {
-            return activeLiveActivity
-        }
-
         let candidates = sortedLiveActivities
-        guard candidates.count >= 2 else { return nil }
-        if isLiveActivitySwapped {
-            return candidates[0]
+        guard !candidates.isEmpty else { return nil }
+
+        // If the main notch is occupied by non-live content (Greeting, Alert, Menu, Camera Mirror):
+        // The dominant LiveActivity steps into the Right Satellite Orb!
+        if isMainOccupiedByNonLiveContent {
+            let primary = isLiveActivitySwapped && candidates.count >= 2 ? candidates[1] : candidates[0]
+            if primary.kindIdentifier == mainKind {
+                return nil
+            }
+            if let alert = rightSatelliteAlert, alert.kindIdentifier == primary.kindIdentifier {
+                return nil
+            }
+            return primary
         }
-        return candidates[1]
+
+        // When the main notch is in normal operation displaying a LiveActivity:
+        // A secondary LiveActivity can ONLY exist if there are at least 2 distinct concurrent LiveActivities!
+        guard candidates.count >= 2 else { return nil }
+
+        let secondary = isLiveActivitySwapped ? candidates[0] : candidates[1]
+        let currentMain = mainKind ?? activeLiveActivity?.kindIdentifier
+        if secondary.kindIdentifier == currentMain {
+            return candidates.first(where: { $0.kindIdentifier != currentMain })
+        }
+        return secondary
     }
 
     /// True when the Satellite Orb should be visible beside the main notch
@@ -301,6 +411,12 @@ final class NotchViewModel: ObservableObject {
             return
         }
 
+        if let rightAlert = rightSatelliteAlert {
+            dismissRightSatellite()
+            presentAlert(rightAlert)
+            return
+        }
+
         if isPresentingAlert {
             // User interacted with the resting LiveActivity in the orb -> instantly dismiss the momentary alert and restore the LiveActivity to the main notch!
             dismissCurrentAlert()
@@ -308,8 +424,12 @@ final class NotchViewModel: ObservableObject {
             return
         }
 
+        let candidates = sortedLiveActivities
+        guard candidates.count >= 2 else { return }
+
         withAnimation(.spring(response: 0.38, dampingFraction: 0.74)) {
-            isLiveActivitySwapped.toggle()
+            liveActivityCycleIndex = (liveActivityCycleIndex + 1) % candidates.count
+            isLiveActivitySwapped = (liveActivityCycleIndex % 2 != 0)
             if let newPrimary = activeLiveActivity {
                 if isExpanded {
                     updateExpandedInPlace(to: newPrimary)
@@ -329,7 +449,7 @@ final class NotchViewModel: ObservableObject {
     private var hoverExitTimer: AnyCancellable?
     private var cleanupWorkItem: DispatchWorkItem?
     private var compactSwapWorkItem: DispatchWorkItem?
-    private var pendingTransitionTarget: NotchState.ContentType?
+    private(set) var pendingTransitionTarget: NotchState.ContentType?
     private var pendingTransitionExpand: Bool = false
     private var alertTriggeredWhileExpanded: Bool = false
     private var liveActivityRetentionTimers: [LiveActivityKind: DispatchWorkItem] = [:]
@@ -337,7 +457,7 @@ final class NotchViewModel: ObservableObject {
 
     private var currentVisibleContent: NotchState.ContentType? {
         guard hasActiveContent else { return nil }
-        return isExpanded ? displayedContent : displayedCompactActivity
+        return isExpanded ? displayedContent : (displayedCompactActivity ?? activeLiveActivity)
     }
 
     // MARK: - UserDefaults Preferences
@@ -412,7 +532,7 @@ final class NotchViewModel: ObservableObject {
         let style = UserDefaults.standard.string(forKey: "animationStyle") ?? "spring"
         switch style {
         case "ease": return .easeInOut(duration: 0.34)
-        case "fast": return .spring(response: 0.28, dampingFraction: 0.84)
+        case "fast": return .spring(response: 0.32, dampingFraction: 0.68)
         default:     return SpringConfig.expand
         }
     }
@@ -420,7 +540,7 @@ final class NotchViewModel: ObservableObject {
         let style = UserDefaults.standard.string(forKey: "animationStyle") ?? "spring"
         switch style {
         case "ease": return .easeInOut(duration: 0.34)
-        case "fast": return .spring(response: 0.28, dampingFraction: 0.88)
+        case "fast": return .spring(response: 0.30, dampingFraction: 0.72)
         default:     return SpringConfig.collapse
         }
     }
@@ -442,13 +562,17 @@ final class NotchViewModel: ObservableObject {
 
     func setHovered(_ hovering: Bool) {
         guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
-        guard activeLiveActivity != nil || currentAlert != nil || pendingTransitionTarget != nil else { return }
 
         hoverExitTimer?.cancel()
         hoverExitTimer = nil
 
         if hovering {
             isHovered = true
+
+            // ONBOARDING & GREETING SHIELD: Never override or alter onboarding/welcome greeting on hover entry
+            if isShowingOnboardingOrGreeting {
+                return
+            }
 
             // If a 2-phase shrink-then-grow transition is currently in flight,
             // let Phase 1 finish shrinking into the notch and upgrade Phase 2 to expand!
@@ -472,10 +596,14 @@ final class NotchViewModel: ObservableObject {
             } else if let live = activeLiveActivity {
                 if !isExpanded {
                     expandFromIdleOrCompact(for: live)
-                } else if let visible = currentVisibleContent,
+                } else if displayedContent != .emptySquareMenu,
+                          let visible = currentVisibleContent,
                           !visible.updatesInPlace(with: live, isExpanded: true) {
                     transitionThroughCutout(to: live, expand: true)
                 }
+            } else if !isExpanded {
+                // IDLE HOVER: If nothing is active, hovering over the notch opens the Quick Action Menu!
+                openSquareMenuFromIdle()
             }
         } else {
             // ONBOARDING & GREETING SHIELD: If onboarding or welcome greeting is active, NEVER collapse or dismiss on hover exit!
@@ -485,11 +613,23 @@ final class NotchViewModel: ObservableObject {
                 return
             }
 
+            // INTERACTIVE ACTION CARD SHIELD: Cards like Clipboard, Shelf, Timer Setup, Camera Mirror,
+            // Quick Actions Menu, Spaces Switcher, Quick Notes, etc. are persistent interactive utility tools.
+            // Moving the mouse cursor around the screen MUST NEVER dismiss or collapse them!
+            if isInteractiveActionCardActive && shouldSuppressAutoCollapse {
+                isHovered = false
+                return
+            }
+
             hoverExitTimer = Just(())
-                .delay(for: .milliseconds(120), scheduler: DispatchQueue.main)
+                .delay(for: .milliseconds(280), scheduler: DispatchQueue.main)
                 .sink { [weak self] _ in
                     guard let self else { return }
                     if self.isShowingOnboardingOrGreeting { return }
+                    if self.isInteractiveActionCardActive && self.shouldSuppressAutoCollapse {
+                        self.isHovered = false
+                        return
+                    }
                     self.isHovered = false
 
                     if let target = self.pendingTransitionTarget {
@@ -500,6 +640,13 @@ final class NotchViewModel: ObservableObject {
                         } else {
                             self.pendingTransitionExpand = false
                         }
+                        return
+                    }
+
+                    // Expanded interactive action cards (Quick Action menu, Spaces, Camera Mirror,
+                    // Clipboard, Shelf, Notes, Reminders, Timer Setup...) close once the cursor leaves.
+                    if self.isInteractiveActionCardActive && self.isExpanded {
+                        self.collapseToIdleOrCompact()
                         return
                     }
 
@@ -580,6 +727,15 @@ final class NotchViewModel: ObservableObject {
             .store(in: &cancellables)
 
         VolumeHUDViewModel.shared.bind(to: volumeObserver)
+
+        // 1e. Active macOS Space / Desktop Change (Apple Standard: Auto-Collapse Expanded Card)
+        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.activeSpaceDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self, self.isExpanded else { return }
+                self.collapseToIdleOrCompact()
+            }
+            .store(in: &cancellables)
 
         // 2. Battery Events (Alert)
         batteryObserver.$event
@@ -874,37 +1030,38 @@ final class NotchViewModel: ObservableObject {
         // to the Satellite Orbs: to the right by default, or to the left if the right is full!
         if isShowingOnboardingOrGreeting {
             let duration = alert.defaultDuration ?? 2.2
-
-            // If the Left Satellite is already showing an alert of the SAME kind:
-            if let leftAlert = leftSatelliteAlert, leftAlert.kindIdentifier == alert.kindIdentifier {
-                showLeftSatellite(content: alert, duration: duration)
-                return
-            }
-
-            // If the Right Satellite is already showing an alert of the SAME kind:
-            if let rightAlert = rightSatelliteAlert, rightAlert.kindIdentifier == alert.kindIdentifier {
-                showRightSatellite(content: alert, duration: duration)
-                return
-            }
-
-            // Check if Right Satellite Orb is occupied (by an active right alert or background live activity):
-            let isRightOccupied = (rightSatelliteAlert != nil) || (activeLiveActivity != nil)
-
-            if isRightOccupied {
-                // Right is occupied -> show on the LEFT ("dolarsa solda da")!
-                showLeftSatellite(content: alert, duration: duration)
-            } else {
-                // Right is free -> show on the RIGHT!
-                showRightSatellite(content: alert, duration: duration)
-            }
+            routeSatelliteAlert(content: alert, duration: duration)
             return
         }
 
-        // Case 1: If an ephemeral alert is already displayed in the Left Satellite Orb,
+        // Case 0b: QUICK ACTION MENU / DESKTOP SPACES SWITCHER / CAMERA MIRROR ACTIVE
+        // When the user is actively interacting with the Quick Action Menu, Desktop Spaces Switcher, or Camera Mirror,
+        // passive HUD indicators (volume, brightness, keyboard brightness) should route to a Satellite Orb
+        // instead of kicking the user out of the menu/mirror.
+        if isExpanded && (displayedContent == .emptySquareMenu || displayedContent == .cameraMirror) && isHUDIndicator(alert) {
+            let duration = alert.defaultDuration ?? 2.2
+            routeSatelliteAlert(content: alert, duration: duration)
+            return
+        }
+
+        // Case 0c: USER IS ENGAGED WITH AN ACTION CARD
+        // While the user works inside an interactive action (Clipboard, Shelf, Notes, Timer Setup...),
+        // system-initiated transient alerts must NOT replace it. They wait on the side (satellite orb)
+        // and, once the user is done and the alert is still valid, glide into the main island.
+        if shouldDeferAlertWhileEngaged(alert) {
+            deferAlertWhileEngaged(alert)
+            return
+        }
+
+        // Case 1: If an ephemeral alert is already displayed in either Satellite Orb,
         // and this incoming alert is of the SAME kind (e.g. repeated keyboard brightness keystrokes) ->
-        // update the Left Satellite Orb in-place and refresh its dismiss timer!
-        if let activeLeftAlert = leftSatelliteAlert, activeLeftAlert.kindIdentifier == alert.kindIdentifier {
-            showLeftSatellite(content: alert, duration: 2.2)
+        // update the respective Satellite Orb in-place and refresh its dismiss timer!
+        if let rightAlert = rightSatelliteAlert, rightAlert.kindIdentifier == alert.kindIdentifier {
+            showRightSatellite(content: alert, duration: alert.defaultDuration ?? 2.2)
+            return
+        }
+        if let leftAlert = leftSatelliteAlert, leftAlert.kindIdentifier == alert.kindIdentifier {
+            showLeftSatellite(content: alert, duration: alert.defaultDuration ?? 2.2)
             return
         }
 
@@ -921,31 +1078,33 @@ final class NotchViewModel: ObservableObject {
         //  or Volume is in main notch, and Screen/Keyboard Brightness arrives):
         if let current = currentAlert {
             if isHUDIndicator(alert) {
-                // If the incoming alert is Keyboard Brightness -> route to Left Satellite Orb!
+                let duration = alert.defaultDuration ?? 2.2
+
+                // If the incoming alert is Keyboard Brightness -> route to Satellite Orb (right first, left if occupied)!
                 if case .keyboardBrightnessChange = alert {
-                    showLeftSatellite(content: alert, duration: 2.2)
+                    routeSatelliteAlert(content: alert, duration: duration)
                     return
                 }
 
                 // If the incoming alert is Display Brightness:
                 if case .brightnessChange = alert {
                     if case .keyboardBrightnessChange(let kbVal) = current {
-                        // Hand keyboard off to left satellite and let display brightness take main notch
-                        showLeftSatellite(content: .keyboardBrightnessChange(kbVal), duration: 2.2)
+                        // Hand keyboard off to satellite orb and let display brightness take main notch
+                        routeSatelliteAlert(content: .keyboardBrightnessChange(kbVal), duration: duration)
                         currentAlert = nil
                         enqueueAlert(alert)
                         return
                     } else {
-                        // Main notch is occupied by another alert (e.g. Volume) -> show Display Brightness on Left Satellite!
-                        showLeftSatellite(content: alert, duration: 2.2)
+                        // Main notch is occupied by another alert (e.g. Volume) -> route Display Brightness to satellite orb!
+                        routeSatelliteAlert(content: alert, duration: duration)
                         return
                     }
                 }
 
                 // If the incoming alert is Volume:
                 if case .volumeChange = alert, isHUDIndicator(current) {
-                    // Hand the existing HUD to Left Satellite and let Volume take the main notch
-                    showLeftSatellite(content: current, duration: 2.2)
+                    // Hand the existing HUD to satellite and let Volume take the main notch
+                    routeSatelliteAlert(content: current, duration: duration)
                     currentAlert = nil
                     enqueueAlert(alert)
                     return
@@ -999,18 +1158,26 @@ final class NotchViewModel: ObservableObject {
             break
         }
 
-        guard currentAlert == nil, !isNotchTemporarilyHidden, let active = activeLiveActivity else { return }
+        guard currentAlert == nil, !isShowingOnboardingOrGreeting, !isNotchTemporarilyHidden, let active = activeLiveActivity else { return }
         guard !isScreenLocked else { return }
 
+        // Never interrupt the Quick Action Menu, Desktop Spaces Switcher, or Camera Mirror while expanded
+        if isExpanded && (displayedContent == .emptySquareMenu || displayedContent == .cameraMirror) {
+            if contentBeforeSquareMenu == nil || contentBeforeSquareMenu?.isLiveActivity == true {
+                contentBeforeSquareMenu = active
+            }
+            return
+        }
+
         let effectiveCurrent = pendingTransitionTarget ?? currentVisibleContent
-        let shouldExpand     = (isHovered || isExpanded || (pendingTransitionTarget != nil && pendingTransitionExpand)) && !isScreenLocked
+        let shouldExpand     = (isHovered || (pendingTransitionTarget != nil && pendingTransitionExpand)) && !isScreenLocked
 
         if hasActiveContent {
             if let existing = effectiveCurrent,
                existing.updatesInPlace(with: active, isExpanded: shouldExpand) {
                 if pendingTransitionTarget != nil {
                     pendingTransitionTarget = active
-                } else if isExpanded && !isScreenLocked {
+                } else if isExpanded && isHovered && !isScreenLocked {
                     updateExpandedInPlace(to: active)
                 } else {
                     updateCompactInPlace(to: active)
@@ -1054,6 +1221,18 @@ final class NotchViewModel: ObservableObject {
         liveActivityRetentionTimers[kind]?.cancel()
         liveActivityRetentionTimers[kind] = nil
 
+        let wasActive: Bool
+        switch kind {
+        case .nowPlaying:      wasActive = (activeNowPlaying != nil)
+        case .download:        wasActive = (activeDownload != nil)
+        case .timer:           wasActive = (activeTimerActivity != nil)
+        case .externalDrive:   wasActive = (activeExternalDriveActivity != nil)
+        case .calendarEvent:   wasActive = (activeCalendarActivity != nil)
+        case .hotspot:         wasActive = (activeHotspotActivity != nil)
+        case .screenRecording: wasActive = (activeScreenRecordingActivity != nil)
+        }
+        guard wasActive else { return }
+
         withAnimation(.spring(response: 0.38, dampingFraction: 0.76)) {
             switch kind {
             case .nowPlaying:
@@ -1072,13 +1251,25 @@ final class NotchViewModel: ObservableObject {
                 activeScreenRecordingActivity = nil
             }
 
-            if sortedLiveActivities.count < 2 {
+            let remainingCount = sortedLiveActivities.count
+            if remainingCount < 2 {
                 isLiveActivitySwapped = false
+                liveActivityCycleIndex = 0
+            } else if liveActivityCycleIndex >= remainingCount {
+                liveActivityCycleIndex = 0
             }
         }
 
-        guard currentAlert == nil else { return }
+        guard currentAlert == nil, !isShowingOnboardingOrGreeting else { return }
         guard !isScreenLocked else { return }
+
+        // Never interrupt the Quick Action Menu, Desktop Spaces Switcher, or Camera Mirror while expanded
+        if isExpanded && (displayedContent == .emptySquareMenu || displayedContent == .cameraMirror) {
+            if contentBeforeSquareMenu?.isLiveActivity == true {
+                contentBeforeSquareMenu = activeLiveActivity
+            }
+            return
+        }
 
         if let fallbackLive = activeLiveActivity {
             let effectiveCurrent   = pendingTransitionTarget ?? currentVisibleContent
@@ -1222,6 +1413,7 @@ final class NotchViewModel: ObservableObject {
         if case .onboarding = alert { return }
         if case .welcomeGreeting = alert { return }
         if isShowingOnboardingOrGreeting { return }
+        if alert.isInteractiveActionCard { return }
         dismissTimer?.cancel()
         dismissTimer = Just(())
             .delay(for: .seconds(duration), scheduler: DispatchQueue.main)
@@ -1232,7 +1424,13 @@ final class NotchViewModel: ObservableObject {
     }
 
     private func onAlertCompleted() {
+        defer { schedulePromotionOfDeferredAlerts() }
         if isShowingOnboardingOrGreeting {
+            return
+        }
+        if isExpanded && (displayedContent?.isInteractiveActionCard == true || currentAlert?.isInteractiveActionCard == true) {
+            dismissTimer?.cancel()
+            dismissTimer = nil
             return
         }
         if currentAlert == .shelf && !ShelfManager.shared.items.isEmpty {
@@ -1265,6 +1463,14 @@ final class NotchViewModel: ObservableObject {
             // Smoothly shrink the finished alert into the physical notch,
             // disappear, and then grow the active LiveActivity (Compact wings by default)!
             transitionThroughCutout(to: live, expand: shouldExpandLive)
+            consolidateSatelliteOrbs()
+        } else if let pendingSatelliteAlert = rightSatelliteAlert ?? leftSatelliteAlert {
+            if rightSatelliteAlert != nil {
+                dismissRightSatellite()
+            } else {
+                dismissLeftSatellite()
+            }
+            presentAlert(pendingSatelliteAlert)
         } else {
             // Nothing left at all -> smoothly collapse into the physical notch!
             isHovered = false
@@ -1273,6 +1479,10 @@ final class NotchViewModel: ObservableObject {
     }
 
     private func returnToLockScreenState() {
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
         compactSwapWorkItem?.cancel()
@@ -1320,6 +1530,7 @@ final class NotchViewModel: ObservableObject {
             isHovered = false
             currentAlert = nil
             alertQueue.removeAll()
+            deferredAlerts.removeAll()
             displayedCompactActivity = nil
 
             windowController?.onScreenLocked()
@@ -1434,6 +1645,10 @@ final class NotchViewModel: ObservableObject {
         to targetContent: NotchState.ContentType,
         expand targetExpanded: Bool
     ) {
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
         compactSwapWorkItem?.cancel()
@@ -1441,6 +1656,10 @@ final class NotchViewModel: ObservableObject {
 
         pendingTransitionTarget = targetContent
         pendingTransitionExpand = targetExpanded
+
+        if targetContent.isLiveActivity, currentAlert?.isAlert == true {
+            currentAlert = nil
+        }
 
         let screen = activeScreen
         let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
@@ -1450,7 +1669,7 @@ final class NotchViewModel: ObservableObject {
         // Phase 1: Shrink outgoing menu/wings + black background into the physical notch.
         // Outgoing `displayedContent`, `displayedCompactActivity`, and `expandedContentSize`
         // remain intact during Phase 1 so the outgoing view scales down cleanly without jumping.
-        withAnimation(.spring(response: 0.26, dampingFraction: 0.88)) {
+        withAnimation(.spring(response: 0.30, dampingFraction: 0.72)) {
             isExpanded                = false
             isCompactWingsSwappingOut = true
             pillSize                  = hiddenSize
@@ -1473,21 +1692,30 @@ final class NotchViewModel: ObservableObject {
             var transaction = Transaction()
             transaction.disablesAnimations = true
             withTransaction(transaction) {
+                if nextContent.isLiveActivity, self.currentAlert?.isAlert == true {
+                    self.currentAlert = nil
+                }
                 self.isNotchVisible           = true
                 self.displayedContent         = nextContent
                 self.displayedCompactActivity = nextContent
                 self.expandedContentSize      = targetSize
                 self.state                    = .expanded(nextContent)
+                self.isShowingSpacesSubpanel  = false
             }
 
             // Phase 2: Grow the new action out of the physical notch!
             let isOverPhysicalNotch = self.windowController?.isMouseOverPhysicalNotch() ?? false
+            // Expansion must come from explicit intent only (caller asked for it, a hover arrived while
+            // the transition was in flight, or the cursor really rests on the notch). The transition
+            // grace window is NOT intent: it is granted by the retract phase itself and previously forced
+            // background Live Activities to pop open and instantly collapse after a transient card closed.
             let finalExpand = (shouldExpand || (isOverPhysicalNotch && self.isHovered)) && !self.isScreenLocked
             if finalExpand {
                 self.isHovered = true
                 self.windowController?.expand(
                     to: targetSize,
-                    preserveHoverRetention: self.activeLiveActivity != nil
+                    preserveHoverRetention: true,
+                    transitionGrace: 1.8
                 )
                 withAnimation(self.selectedExpandAnimation) {
                     self.hasActiveContent          = true
@@ -1513,6 +1741,10 @@ final class NotchViewModel: ObservableObject {
 
     /// Expands the notch from Idle (`hiddenSize`) or from the SAME item's Compact Wings.
     private func expandFromIdleOrCompact(for content: NotchState.ContentType) {
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
         compactSwapWorkItem?.cancel()
@@ -1522,6 +1754,10 @@ final class NotchViewModel: ObservableObject {
 
         let screen = activeScreen
         let targetSize = effectiveTargetSize(for: content, screen: screen)
+
+        if content.isLiveActivity, currentAlert?.isAlert == true {
+            currentAlert = nil
+        }
 
         var transaction = Transaction()
         transaction.disablesAnimations = true
@@ -1536,7 +1772,8 @@ final class NotchViewModel: ObservableObject {
 
         windowController?.expand(
             to: targetSize,
-            preserveHoverRetention: activeLiveActivity != nil
+            preserveHoverRetention: false,
+            transitionGrace: 0.0
         )
 
         withAnimation(selectedExpandAnimation) {
@@ -1548,6 +1785,10 @@ final class NotchViewModel: ObservableObject {
 
     /// Emerges compact wings directly from Idle (`hiddenSize`).
     private func emergeCompactFromIdle(for content: NotchState.ContentType) {
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
         compactSwapWorkItem?.cancel()
@@ -1565,6 +1806,10 @@ final class NotchViewModel: ObservableObject {
             isHovered = true
             expandFromIdleOrCompact(for: content)
             return
+        }
+
+        if content.isLiveActivity, currentAlert?.isAlert == true {
+            currentAlert = nil
         }
 
         var transaction = Transaction()
@@ -1590,12 +1835,16 @@ final class NotchViewModel: ObservableObject {
     /// Updates the currently expanded card in-place when the same feature emits new data
     /// (e.g. volume steps, track progress, download progress).
     private func updateExpandedInPlace(to content: NotchState.ContentType) {
+        if content.isLiveActivity, currentAlert?.isAlert == true {
+            currentAlert = nil
+        }
         let screen = activeScreen
         let targetSize = effectiveTargetSize(for: content, screen: screen)
 
         windowController?.expand(
             to: targetSize,
-            preserveHoverRetention: activeLiveActivity != nil
+            preserveHoverRetention: false,
+            transitionGrace: 0.0
         )
 
         isNotchVisible           = true
@@ -1613,6 +1862,9 @@ final class NotchViewModel: ObservableObject {
 
     /// Updates the currently visible compact wings in-place when the same feature emits new data.
     private func updateCompactInPlace(to content: NotchState.ContentType) {
+        if content.isLiveActivity, currentAlert?.isAlert == true {
+            currentAlert = nil
+        }
         let screen = activeScreen
         let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
         let targetSize  = effectiveTargetSize(for: content, screen: screen)
@@ -1632,6 +1884,10 @@ final class NotchViewModel: ObservableObject {
 
     /// Collapses an expanded Compact-First Alert back to its own Compact Wings when the cursor leaves.
     private func collapseAlertToCompactWings(_ alert: NotchState.ContentType) {
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
         compactSwapWorkItem?.cancel()
@@ -1658,6 +1914,7 @@ final class NotchViewModel: ObservableObject {
 
     /// Collapses an expanded LiveActivity back to its own Compact Wings when the cursor leaves.
     private func showCompactWings() {
+        defer { schedulePromotionOfDeferredAlerts() }
         guard let live = activeLiveActivity else {
             hideCompletely()
             return
@@ -1667,6 +1924,10 @@ final class NotchViewModel: ObservableObject {
            !visible.updatesInPlace(with: live, isExpanded: false) {
             transitionThroughCutout(to: live, expand: false)
             return
+        }
+
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
         }
 
         cleanupWorkItem?.cancel()
@@ -1703,6 +1964,7 @@ final class NotchViewModel: ObservableObject {
 
         let work = DispatchWorkItem { [weak self] in
             guard let self, self.hasActiveContent, !self.isExpanded else { return }
+            self.isShowingSpacesSubpanel = false
             if let active = self.activeLiveActivity {
                 self.displayedContent    = active
                 self.expandedContentSize = self.effectiveTargetSize(for: active, screen: screen)
@@ -1714,6 +1976,11 @@ final class NotchViewModel: ObservableObject {
 
     /// State 1: Smoothly collapse into the physical notch and hide completely.
     private func hideCompletely() {
+        defer { schedulePromotionOfDeferredAlerts() }
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
         cleanupWorkItem?.cancel()
         cleanupWorkItem = nil
         compactSwapWorkItem?.cancel()
@@ -1725,6 +1992,7 @@ final class NotchViewModel: ObservableObject {
         dismissTimer?.cancel()
         dismissTimer = nil
         dismissLeftSatellite()
+        dismissRightSatellite()
         currentAlert = nil
         isHovered    = false
 
@@ -1751,9 +2019,143 @@ final class NotchViewModel: ObservableObject {
             self.state                     = .idle
             self.displayedContent          = nil
             self.displayedCompactActivity  = nil
+            self.isShowingSpacesSubpanel   = false
         }
         cleanupWorkItem = work
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.42, execute: work)
+    }
+
+    // MARK: - Engagement-Aware Alert Deferral
+
+    private struct DeferredAlert {
+        var alert: NotchState.ContentType
+        var expiry: Date
+    }
+
+    private var deferredAlerts: [DeferredAlert] = []
+    private var deferredPromotionWorkItem: DispatchWorkItem?
+
+    /// How long a deferred alert stays relevant after it arrived.
+    private let deferredAlertLifetime: TimeInterval = 20.0
+
+    /// `true` while the user is actively working inside an interactive action card.
+    var isEngagedWithAction: Bool {
+        guard isExpanded, !isScreenLocked, !isShowingOnboardingOrGreeting else { return false }
+        guard isInteractiveActionCardActive else { return false }
+        if displayedContent == .emptySquareMenu || displayedContent == .cameraMirror { return true }
+        return isHovered
+            || isInteractingWithControl
+            || isHoveringSlider
+            || windowController?.isPanelKeyWindow == true
+    }
+
+    /// Only system-initiated alerts wait. Results of the user's own action (saved note, ejected disk,
+    /// focus toggle, screenshot...) and interactive cards present immediately as before.
+    private func shouldDeferAlertWhileEngaged(_ alert: NotchState.ContentType) -> Bool {
+        guard isEngagedWithAction, !alert.isInteractiveActionCard else { return false }
+        switch alert {
+        case .batteryLow, .batteryCharging, .batteryFull,
+             .bluetoothConnected, .bluetoothDisconnected,
+             .wifiConnected, .wifiDisconnected, .vpnConnected,
+             .noInternet, .calendarAlert, .hotspotLowBattery,
+             .muted, .volumeChange, .brightnessChange, .keyboardBrightnessChange:
+            return true
+        default:
+            return false
+        }
+    }
+
+    private func deferAlertWhileEngaged(_ alert: NotchState.ContentType) {
+        let entry = DeferredAlert(alert: alert, expiry: Date().addingTimeInterval(deferredAlertLifetime))
+        if let idx = deferredAlerts.firstIndex(where: { $0.alert.kindIdentifier == alert.kindIdentifier }) {
+            deferredAlerts[idx] = entry
+        } else {
+            deferredAlerts.append(entry)
+        }
+        // Visible "waiting on the side" indicator that lives as long as the alert stays relevant.
+        routeSatelliteAlert(content: alert, duration: deferredAlertLifetime)
+    }
+
+    /// Re-checks shortly after any collapse/close whether deferred alerts can now come to the main island.
+    private func schedulePromotionOfDeferredAlerts() {
+        guard !deferredAlerts.isEmpty else { return }
+        deferredPromotionWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            self?.promoteDeferredAlertsIfPossible()
+        }
+        deferredPromotionWorkItem = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+    }
+
+    private func promoteDeferredAlertsIfPossible() {
+        deferredPromotionWorkItem = nil
+        let now = Date()
+        deferredAlerts.removeAll { $0.expiry <= now }
+        guard !deferredAlerts.isEmpty else { return }
+        guard !isScreenLocked, !isShowingOnboardingOrGreeting, !isNotchTemporarilyHidden else { return }
+        // Still busy (card open or being worked on, alert on screen, transition running): retry later.
+        guard !isEngagedWithAction,
+              !(isExpanded && isInteractiveActionCardActive),
+              currentAlert == nil,
+              pendingTransitionTarget == nil else {
+            schedulePromotionOfDeferredAlerts()
+            return
+        }
+
+        let ready = deferredAlerts
+        deferredAlerts.removeAll()
+
+        // Remove the waiting orbs for these alerts; they move to the main island now.
+        for item in ready {
+            if rightSatelliteAlert?.kindIdentifier == item.alert.kindIdentifier { dismissRightSatellite() }
+            if leftSatelliteAlert?.kindIdentifier == item.alert.kindIdentifier { dismissLeftSatellite() }
+        }
+
+        guard let first = ready.first else { return }
+        alertQueue.append(contentsOf: ready.dropFirst().map { $0.alert })
+        presentAlert(first.alert)
+    }
+
+    // MARK: - Interactive Action Card Auto-Collapse Policy
+
+    /// `true` while a persistent interactive utility card (Quick Action menu, Clipboard, Shelf,
+    /// Notes, Camera Mirror, ...) is the visible content.
+    var isInteractiveActionCardActive: Bool {
+        displayedContent?.isInteractiveActionCard == true || currentAlert?.isInteractiveActionCard == true
+    }
+
+    /// Whether leaving the card with the cursor must NOT collapse it right now
+    /// (onboarding / permission prompts, active typing sessions, slider or drag interaction).
+    var shouldSuppressAutoCollapse: Bool {
+        if isShowingOnboardingOrGreeting { return true }
+        if isInteractingWithControl || isHoveringSlider { return true }
+        for content in [displayedContent, currentAlert].compactMap({ $0 }) where content.isInteractiveActionCard {
+            if content.isExemptFromAutoCollapse { return true }
+            if content.isTextInputCard && windowController?.isPanelKeyWindow == true { return true }
+        }
+        return false
+    }
+
+    // MARK: - Safe Dismissal & Collapse (Apple Standards)
+
+    /// Seamlessly collapses any expanded card, alert, or quick-action menu back to compact wings
+    /// (if a LiveActivity is active) or hides it completely into the notch (idle state).
+    func collapseToIdleOrCompact() {
+        guard !isShowingOnboardingOrGreeting else { return }
+        defer { schedulePromotionOfDeferredAlerts() }
+
+        hoverExitTimer?.cancel()
+        hoverExitTimer = nil
+        isHovered = false
+        isHoveringSlider = false
+        isInteractingWithControl = false
+        contentBeforeSquareMenu = nil
+
+        if activeLiveActivity != nil {
+            showCompactWings()
+        } else {
+            hideCompletely()
+        }
     }
 
     // MARK: - Interactive Volume Control from Expanded HUD
@@ -1775,15 +2177,33 @@ final class NotchViewModel: ObservableObject {
 
     func toggleMuteFromHUD() {
         volumeObserver.toggleMute()
-        let updated: NotchState.ContentType = .volumeChange(volumeObserver.volume)
+        let isMuted = volumeObserver.isMuted
+        let updated: NotchState.ContentType = isMuted ? .muted(true) : .volumeChange(volumeObserver.volume)
+
+        VolumeHUDViewModel.shared.isAudioRouteExpanded = false
+
+        let screen = activeScreen
+        let targetSize = effectiveTargetSize(for: updated, screen: screen)
+
         currentAlert             = updated
         displayedContent         = updated
         displayedCompactActivity = updated
         state                    = .expanded(updated)
+        hasActiveContent         = true
+        isNotchVisible           = true
 
-        if alertTriggeredWhileExpanded || !isHovered {
-            scheduleAlertDismiss(duration: 2.2, for: updated)
+        withAnimation(selectedExpandAnimation) {
+            expandedContentSize = targetSize
+            pillSize            = targetSize
         }
+
+        windowController?.expand(
+            to: targetSize,
+            preserveHoverRetention: true,
+            transitionGrace: 1.8
+        )
+
+        scheduleAlertDismiss(duration: 2.2, for: updated)
     }
 
     // MARK: - Interactive Brightness Control from Expanded HUD
@@ -1983,6 +2403,7 @@ final class NotchViewModel: ObservableObject {
     @Published private(set) var activeOnboardingStep: OnboardingStep? = nil
 
     func presentOnboarding(step: OnboardingStep) {
+        setMenuBarDodging(false)
         dismissTimer?.cancel()
         dismissTimer = nil
         hoverExitTimer?.cancel()
@@ -2068,10 +2489,17 @@ final class NotchViewModel: ObservableObject {
     // MARK: - Welcome Greeting Presentation (1-Round App Launch Animation)
 
     func presentWelcomeGreeting() {
+        setMenuBarDodging(false)
         dismissTimer?.cancel()
         dismissTimer = nil
         hoverExitTimer?.cancel()
         hoverExitTimer = nil
+        cleanupWorkItem?.cancel()
+        cleanupWorkItem = nil
+        compactSwapWorkItem?.cancel()
+        compactSwapWorkItem = nil
+        pendingTransitionTarget = nil
+        pendingTransitionExpand = false
 
         let content = NotchState.ContentType.welcomeGreeting
         currentAlert = content
@@ -2081,10 +2509,18 @@ final class NotchViewModel: ObservableObject {
         } else {
             expandFromIdleOrCompact(for: content)
         }
+
+        // Safety watchdog: if for any reason the view's 4.65s timer is interrupted, ensure greeting concludes cleanly
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.2) { [weak self] in
+            guard let self else { return }
+            if self.currentAlert == .welcomeGreeting || NotchOnboardingManager.shared.isGreetingActive {
+                NotchOnboardingManager.shared.finishWelcomeGreeting()
+            }
+        }
     }
 
     func dismissWelcomeGreeting() {
-        guard currentAlert == .welcomeGreeting else { return }
+        guard currentAlert == .welcomeGreeting || NotchOnboardingManager.shared.isGreetingActive else { return }
         dismissTimer?.cancel()
         dismissTimer = nil
         hoverExitTimer?.cancel()
@@ -2098,7 +2534,7 @@ final class NotchViewModel: ObservableObject {
             // Aşama 1 (0.26s): Boşalan welcome kartı ve sağdaki uydu orb'u fiziksel çentiğe çekilir (absorb)
             windowController?.beginRetractTransition()
 
-            withAnimation(.spring(response: 0.26, dampingFraction: 0.88)) {
+            withAnimation(.spring(response: 0.30, dampingFraction: 0.72)) {
                 self.isExpanded = false
                 self.isCompactWingsSwappingOut = true
                 self.pillSize = hiddenSize
@@ -2147,12 +2583,14 @@ final class NotchViewModel: ObservableObject {
             dismissLeftSatellite()
             presentAlert(next)
         } else {
+            currentAlert = nil
             hideCompletely()
         }
     }
 
     func dismiss() {
         alertQueue.removeAll()
+        deferredAlerts.removeAll()
         activeNowPlaying    = nil
         activeDownload      = nil
         activeTimerActivity = nil
@@ -2483,11 +2921,101 @@ final class NotchViewModel: ObservableObject {
     // MARK: - Empty Square Menu (2-Finger Swipe Left / Right Gesture)
 
     private var contentBeforeSquareMenu: NotchState.ContentType?
+    @Published var isShowingSpacesSubpanel: Bool = false
+
+    // MARK: - Control Interaction Suppression (Prevents card gestures while dragging sliders/scrubbers)
+    @Published var isInteractingWithControl: Bool = false
+    @Published var isHoveringSlider: Bool = false
+    private var controlInteractionDebounceWorkItem: DispatchWorkItem?
+
+    func beginControlInteraction() {
+        controlInteractionDebounceWorkItem?.cancel()
+        controlInteractionDebounceWorkItem = nil
+        isInteractingWithControl = true
+    }
+
+    func endControlInteraction(delay: TimeInterval = 0.25) {
+        controlInteractionDebounceWorkItem?.cancel()
+        let item = DispatchWorkItem { [weak self] in
+            self?.isInteractingWithControl = false
+        }
+        controlInteractionDebounceWorkItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: item)
+    }
+
+    /// Opens the Quick Action radial dial menu when hovering over the idle notch.
+    func openSquareMenuFromIdle() {
+        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
+        guard !isShowingOnboardingOrGreeting else { return }
+        guard !isExpanded && activeLiveActivity == nil && currentAlert == nil else { return }
+
+        dismissTimer?.cancel()
+        dismissTimer = nil
+        hoverExitTimer?.cancel()
+        hoverExitTimer = nil
+        cleanupWorkItem?.cancel()
+        cleanupWorkItem = nil
+        compactSwapWorkItem?.cancel()
+        compactSwapWorkItem = nil
+        pendingTransitionTarget = nil
+        pendingTransitionExpand = false
+        alertTriggeredWhileExpanded = false
+        isShowingSpacesSubpanel = false
+        contentBeforeSquareMenu = nil
+
+        let screen = ScreenHelper.targetScreen
+        let targetSize = effectiveTargetSize(for: .emptySquareMenu, screen: screen)
+
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            isNotchVisible           = true
+            displayedCompactActivity = .emptySquareMenu
+            displayedContent         = .emptySquareMenu
+            expandedContentSize      = targetSize
+            state                    = .expanded(.emptySquareMenu)
+            isCompactWingsSwappingOut = false
+        }
+
+        windowController?.expand(
+            to: targetSize,
+            preserveHoverRetention: true,
+            transitionGrace: 1.8
+        )
+
+        withAnimation(selectedExpandAnimation) {
+            hasActiveContent = true
+            isExpanded       = true
+            pillSize         = targetSize
+        }
+
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+    }
 
     func switchToSquareMenu() {
         guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
         guard isExpanded else { return }
         guard displayedContent != .emptySquareMenu else { return }
+        guard !isInteractingWithControl && !isHoveringSlider else { return }
+
+        // Cancel any pending alert dismiss or hover-exit timer so the Quick Action Menu
+        // never gets closed mid-interaction by an expiring alert timer!
+        dismissTimer?.cancel()
+        dismissTimer = nil
+        hoverExitTimer?.cancel()
+        hoverExitTimer = nil
+        if displayedContent == .cameraMirror {
+            CameraCaptureManager.shared.stopSession()
+        }
+
+        cleanupWorkItem?.cancel()
+        cleanupWorkItem = nil
+        compactSwapWorkItem?.cancel()
+        compactSwapWorkItem = nil
+        pendingTransitionTarget = nil
+        pendingTransitionExpand = false
+        alertTriggeredWhileExpanded = false
+        isShowingSpacesSubpanel = false
 
         // Remember currently active content so swiping right can restore it seamlessly
         if let current = displayedContent {
@@ -2510,12 +3038,26 @@ final class NotchViewModel: ObservableObject {
 
         windowController?.expand(
             to: targetSize,
-            preserveHoverRetention: true
+            preserveHoverRetention: false,
+            transitionGrace: 0.0
         )
     }
 
-    func restoreFromSquareMenu() {
+    func restoreFromSquareMenu(forceCloseSubpanel: Bool = false) {
+        defer { schedulePromotionOfDeferredAlerts() }
         guard isExpanded, displayedContent == .emptySquareMenu else { return }
+        guard !isInteractingWithControl && !isHoveringSlider else { return }
+
+        // If the user is inside the Desktops Management subpanel and swipes right,
+        // navigate back to the Quick Action radial dial instead of closing the menu.
+        if isShowingSpacesSubpanel && !forceCloseSubpanel {
+            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+            withAnimation(selectedExpandAnimation) {
+                isShowingSpacesSubpanel = false
+            }
+            return
+        }
+
         guard let previous = contentBeforeSquareMenu ?? activeLiveActivity else {
             if activeLiveActivity != nil {
                 showCompactWings()
@@ -2536,11 +3078,13 @@ final class NotchViewModel: ObservableObject {
             displayedContent = previous
             expandedContentSize = targetSize
             pillSize = targetSize
+            isShowingSpacesSubpanel = false
         }
 
         windowController?.expand(
             to: targetSize,
-            preserveHoverRetention: true
+            preserveHoverRetention: true,
+            transitionGrace: 1.8
         )
     }
 
@@ -2697,7 +3241,8 @@ final class NotchViewModel: ObservableObject {
 
         if isExpanded {
             if case .cameraMirror = displayedContent {
-                showCompactWings()
+                CameraCaptureManager.shared.stopSession()
+                collapseToIdleOrCompact()
                 return
             }
             if currentAlert != nil {

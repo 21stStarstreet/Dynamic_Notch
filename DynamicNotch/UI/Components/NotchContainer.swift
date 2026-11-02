@@ -54,7 +54,7 @@ struct NotchContainerView: View {
     }
 
     private var effectivePillSize: CGSize {
-        if viewModel.isMenuBarDodging {
+        if viewModel.isMenuBarDodging && !viewModel.isShowingOnboardingOrGreeting {
             return NotchPositionCalculator.hiddenFrame(for: screen).size
         }
         return viewModel.pillSize
@@ -72,7 +72,7 @@ struct NotchContainerView: View {
                 return 38.0
             case .clipboard, .noInternet, .shelf, .quickNote, .quickReminder:
                 return 12.0
-            case .onboarding, .emptySquareMenu, .welcomeGreeting:
+            case .onboarding, .emptySquareMenu, .welcomeGreeting, .cameraMirror:
                 return 14.0
             case .timer, .timerSetup:
                 return NotchPositionCalculator.expandedTopEarRadius
@@ -108,8 +108,12 @@ struct NotchContainerView: View {
                 return 22.0
             case .externalDriveEjected:
                 return 18.0
-            case .timer, .timerSetup, .onboarding, .emptySquareMenu:
+            case .timer, .timerSetup, .onboarding:
                 return 24.0
+            case .emptySquareMenu:
+                return 48.0
+            case .cameraMirror:
+                return 36.0
             case .welcomeGreeting:
                 return 24.0
             case .volumeChange, .muted:
@@ -137,6 +141,12 @@ struct NotchContainerView: View {
             }
             if case .welcomeGreeting = viewModel.displayedContent {
                 return min(effectivePillSize.height / 2.0, 36.0)
+            }
+            if case .emptySquareMenu = viewModel.displayedContent {
+                return 48.0
+            }
+            if case .cameraMirror = viewModel.displayedContent {
+                return 36.0
             }
             return bottomCornerRadius
         }
@@ -169,9 +179,11 @@ struct NotchContainerView: View {
             case .welcomeGreeting:
                 return 26.0
             case .emptySquareMenu:
-                return QuickActionMenuGeometryEngine.calculate(screen: screen).floatingTopPadding
+                return 0.0
             case .nowPlaying:
                 return 12.0
+            case .cameraMirror:
+                return 14.0
             default:
                 return isDisplayingAlert ? 12.0 : 14.0
             }
@@ -197,9 +209,9 @@ struct NotchContainerView: View {
         case .accessibilityPermissionRequired:
             return topCutoutClearance + 12.0
         case .emptySquareMenu:
-            return topCutoutClearance + QuickActionMenuGeometryEngine.calculate(screen: screen).topClearanceBelowCutout
+            return topCutoutClearance
         case .cameraMirror:
-            return topCutoutClearance + 8.0
+            return topCutoutClearance + 12.0
         default:
             return topCutoutClearance + (isDisplayingAlert ? 5.0 : 7.0)
         }
@@ -231,11 +243,11 @@ struct NotchContainerView: View {
             case .welcomeGreeting:
                 return 26.0
             case .emptySquareMenu:
-                return QuickActionMenuGeometryEngine.calculate(screen: screen).bottomPadding
+                return 0.0
             case .nowPlaying:
                 return 12.0
             case .cameraMirror:
-                return 14.0
+                return 20.0
             default:
                 return isDisplayingAlert ? 12.0 : 14.0
             }
@@ -259,9 +271,9 @@ struct NotchContainerView: View {
         case .timer:
             return 0.0
         case .emptySquareMenu:
-            return QuickActionMenuGeometryEngine.calculate(screen: screen).bottomPadding
+            return 0.0
         case .cameraMirror:
-            return 14.0
+            return 20.0
         case .timerSetup:
             return 9.0
         case .volumeChange, .muted:
@@ -298,9 +310,9 @@ struct NotchContainerView: View {
         case .welcomeGreeting:
             return isFloating ? 45.0 : max((effectivePillSize.width - 230.0) / 2.0, 65.0)
         case .emptySquareMenu:
-            return QuickActionMenuGeometryEngine.calculate(screen: screen).horizontalPadding
+            return isFloating ? 0.0 : topEarRadius
         case .cameraMirror:
-            return 16.0
+            return isFloating ? 20.0 : (topEarRadius + 20.0)
         default:
             if viewModel.displayedContent?.prefersCompactPresentation == true && !VolumeHUDViewModel.shared.isAudioRouteExpanded {
                 return NotchPositionCalculator.compactTopEarRadius + 14.0
@@ -488,11 +500,11 @@ struct NotchContainerView: View {
             }
         }
         .animation(
-            .spring(response: 0.24, dampingFraction: 0.88),
+            .spring(response: 0.38, dampingFraction: 0.68),
             value: viewModel.hasSecondaryLiveActivity
         )
         .animation(
-            .spring(response: 0.24, dampingFraction: 0.88),
+            .spring(response: 0.38, dampingFraction: 0.68),
             value: viewModel.hasLeftSatelliteOrb
         )
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -540,7 +552,7 @@ struct NotchContainerView: View {
                     height: effectivePillSize.height
                 )
                 .shadow(
-                    color: .black.opacity((viewModel.isExpanded && !viewModel.isMenuBarDodging) ? 0.42 : 0.0),
+                    color: .black.opacity((viewModel.isExpanded && (!viewModel.isMenuBarDodging || viewModel.isShowingOnboardingOrGreeting)) ? 0.42 : 0.0),
                     radius: 12,
                     x: 0,
                     y: 5
@@ -578,8 +590,8 @@ struct NotchContainerView: View {
                     anchor: .top
                 )
                 .offset(y: viewModel.isExpanded ? 0 : -10)
-                .opacity((viewModel.isExpanded && !viewModel.isMenuBarDodging) ? 1.0 : 0.0)
-                .allowsHitTesting(!viewModel.isScreenLocked && viewModel.isExpanded && !viewModel.isMenuBarDodging)
+                .opacity((viewModel.isExpanded && (!viewModel.isMenuBarDodging || viewModel.isShowingOnboardingOrGreeting)) ? 1.0 : 0.0)
+                .allowsHitTesting(!viewModel.isScreenLocked && viewModel.isExpanded && (!viewModel.isMenuBarDodging || viewModel.isShowingOnboardingOrGreeting))
         }
         .frame(
             width: effectivePillSize.width,
@@ -603,15 +615,16 @@ struct NotchContainerView: View {
         // a second safety net removes any residual SwiftUI-level interception.
         .allowsHitTesting(!viewModel.isMenuBarDodging && !viewModel.isScreenTransferring)
         .simultaneousGesture(
-            DragGesture(minimumDistance: 14)
+            DragGesture(minimumDistance: 28)
                 .onEnded { value in
                     guard viewModel.isExpanded else { return }
+                    guard !viewModel.isInteractingWithControl && !viewModel.isHoveringSlider else { return }
                     let dx = value.translation.width
                     let dy = value.translation.height
-                    if abs(dx) > abs(dy) * 1.25 {
-                        if dx < -22 {
+                    if abs(dx) > abs(dy) * 1.35 {
+                        if dx < -48.0 {
                             viewModel.switchToSquareMenu()
-                        } else if dx > 22 {
+                        } else if dx > 48.0 {
                             viewModel.restoreFromSquareMenu()
                         }
                     }

@@ -109,6 +109,7 @@ struct NowPlayingView: View {
                         onScrubStart: {
                             isDraggingScrubber = true
                             scrubbedTime = viewModel.liveElapsedTime
+                            NotchViewModel.shared?.beginControlInteraction()
                         },
                         onScrubChanged: { newTime in
                             scrubbedTime = newTime
@@ -117,6 +118,7 @@ struct NowPlayingView: View {
                             isDraggingScrubber = false
                             viewModel.liveElapsedTime = finalTime
                             observer.seek(to: finalTime)
+                            NotchViewModel.shared?.endControlInteraction()
                         }
                     )
                 }
@@ -251,6 +253,7 @@ struct InteractiveScrubberView: View {
                             guard effectiveDuration > 0 else { return }
                             if !isDragging {
                                 isDragging = true
+                                NotchViewModel.shared?.beginControlInteraction()
                                 onScrubStart()
                             }
                             let fraction = min(max(value.location.x / width, 0.0), 1.0)
@@ -263,6 +266,7 @@ struct InteractiveScrubberView: View {
                             let finalTime = fraction * effectiveDuration
                             isDragging = false
                             onScrubEnd(finalTime)
+                            NotchViewModel.shared?.endControlInteraction()
                         }
                 )
             }
@@ -271,6 +275,7 @@ struct InteractiveScrubberView: View {
                 withAnimation(.easeInOut(duration: 0.14)) {
                     isHovering = hovering
                 }
+                NotchViewModel.shared?.isHoveringSlider = hovering
             }
 
             // Right: Duration or Remaining Time

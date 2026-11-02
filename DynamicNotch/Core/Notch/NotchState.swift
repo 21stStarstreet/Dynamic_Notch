@@ -287,6 +287,52 @@ enum NotchState: Equatable {
         var isLiveActivity: Bool { category == .liveActivity }
         var isAlert:        Bool { category == .alert }
 
+        /// Returns `true` for persistent interactive utility action cards that the user intentionally
+        /// opens and interacts with (e.g. Clipboard Manager, File Shelf, Timer Setup, Camera Mirror,
+        /// Quick Actions Menu, Spaces Switcher, Quick Notes, etc.).
+        /// These cards must NEVER be auto-dismissed on cursor movement, hover-exit timers,
+        /// background watchdogs, or outside clicks. They only close via explicit user actions
+        /// (ESC key, close button, toggle shortcut, or card swipe).
+        var isInteractiveActionCard: Bool {
+            switch self {
+            case .clipboard,
+                 .shelf,
+                 .timerSetup,
+                 .cameraMirror,
+                 .emptySquareMenu,
+                 .quickNote,
+                 .quickReminder,
+                 .accessibilityPermissionRequired,
+                 .onboarding,
+                 .welcomeGreeting:
+                return true
+            default:
+                return false
+            }
+        }
+
+        /// Cards that require an explicit user decision and therefore must never be
+        /// auto-collapsed when the cursor leaves them.
+        var isExemptFromAutoCollapse: Bool {
+            switch self {
+            case .accessibilityPermissionRequired, .onboarding, .welcomeGreeting:
+                return true
+            default:
+                return false
+            }
+        }
+
+        /// Cards with a text/keyboard input session. They are only auto-collapsed once
+        /// the panel no longer holds keyboard focus, so typed text is never lost mid-edit.
+        var isTextInputCard: Bool {
+            switch self {
+            case .quickNote, .quickReminder, .timerSetup:
+                return true
+            default:
+                return false
+            }
+        }
+
         var kindIdentifier: String {
             switch self {
             case .nowPlaying: return "nowPlaying"
@@ -512,22 +558,25 @@ enum NotchState: Equatable {
         }
 
         var defaultDuration: TimeInterval? {
+            if isInteractiveActionCard {
+                return nil
+            }
             switch self {
             case .noInternet:                             return 12.0
             case .batteryLow:                             return 6.0
             case .hotspotLowBattery:                      return 5.0
             case .screenshot:                             return 8.0
-            case .shelf:                                  return 10.0
+            case .shelf:                                  return nil
             case .externalDriveEjected:                   return 2.8
             case .calendarAlert:                          return 6.0
-            case .accessibilityPermissionRequired:        return 15.0
+            case .accessibilityPermissionRequired:        return nil
             case .spotifyAuthorized:                      return 2.2
-            case .quickNote:                              return 180.0
+            case .quickNote:                              return nil
             case .quickNoteSaved:                         return 2.6
-            case .quickReminder:                          return 180.0
+            case .quickReminder:                          return nil
             case .quickReminderSaved:                     return 2.6
-            case .timerSetup:                             return 60.0
-            case .clipboard:                              return 6.0
+            case .timerSetup:                             return nil
+            case .clipboard:                              return nil
             case .batteryCharging, .batteryFull:          return 4.0
             case .bluetoothConnected(let name):
                 let model = AirPodsModel(deviceName: name)

@@ -133,7 +133,18 @@ final class ClipboardObserver: ObservableObject {
             return
         }
 
-        parsePasteboard(pasteboard)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.parsePasteboard(pasteboard)
+        }
+    }
+
+    private static func isSameContent(_ a: ClipboardItem, _ b: ClipboardItem) -> Bool {
+        switch (a.type, b.type) {
+        case (.text(let x), .text(let y)): return x == y
+        case (.url(let x), .url(let y)):   return x == y
+        case (.file(let x), .file(let y)): return x == y
+        default: return false
+        }
     }
 
     private func parsePasteboard(_ pasteboard: NSPasteboard) {
@@ -231,17 +242,30 @@ final class ClipboardObserver: ObservableObject {
 
         guard let newItem = createdItem else { return }
 
-        // Remove duplicate if identical content already exists
-        clipboardItems.removeAll { existing in
-            existing.displayName == newItem.displayName && existing.detailText == newItem.detailText
-        }
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
 
-        clipboardItems.insert(newItem, at: 0)
-        if clipboardItems.count > maxItems {
-            clipboardItems = Array(clipboardItems.prefix(maxItems))
-        }
+            // Re-copying content that is already in the history: only bring it to the top,
+            // without announcing it as a new copy (no `lastCopiedItem` change -> no animation).
+            // Images are excluded because identical name/size does not guarantee identical pixels.
+            if let existingIndex = self.clipboardItems.firstIndex(where: { Self.isSameContent($0, newItem) }) {
+                let existing = self.clipboardItems.remove(at: existingIndex)
+                self.clipboardItems.insert(existing, at: 0)
+                return
+            }
 
-        lastCopiedItem = newItem
+            // Remove duplicate if identical content already exists
+            self.clipboardItems.removeAll { existing in
+                existing.displayName == newItem.displayName && existing.detailText == newItem.detailText
+            }
+
+            self.clipboardItems.insert(newItem, at: 0)
+            if self.clipboardItems.count > self.maxItems {
+                self.clipboardItems = Array(self.clipboardItems.prefix(self.maxItems))
+            }
+
+            self.lastCopiedItem = newItem
+        }
     }
 
     // MARK: - User Actions

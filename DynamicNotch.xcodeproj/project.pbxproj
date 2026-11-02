@@ -89,6 +89,7 @@
 		99B75D52C900D626123A16BE /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E7412AE6323F890A5331A7A /* SwiftUI.framework */; };
 		9B1442D0A6C4C34423E41D16 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 068DC3DB6BADED228474531C /* SettingsWindowController.swift */; };
 		9F744BDBE22C1A8A44E7B61E /* NotchContentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF9FF9D7E275D4C5BF35E685 /* NotchContentRouter.swift */; };
+		D10B0BE01001000100000001 /* QuickActionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D10B0BE01001000100000002 /* QuickActionManager.swift */; };
 		AB59A1CB21A7D6C0244C1284 /* VolumeHUDViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0ABC786AA2A8B164390BF513 /* VolumeHUDViewModel.swift */; };
 		ADE0C4B458CC5D8CE414EF76 /* Combine.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C291FD04A804ACA0738B3E7 /* Combine.framework */; };
 		B3152B7A66D808D89E721056 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9CB9CCE284B14B59F0E24BA1 /* Localizable.strings */; };
@@ -243,6 +244,7 @@
 		B7B9DB435335449B5BDCE30D /* BluetoothAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothAlertView.swift; sourceTree = "<group>"; };
 		BF5A593288B75474E2C488CC /* NotchWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchWindowController.swift; sourceTree = "<group>"; };
 		BF9FF9D7E275D4C5BF35E685 /* NotchContentRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotchContentRouter.swift; sourceTree = "<group>"; };
+		D10B0BE01001000100000002 /* QuickActionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActionManager.swift; sourceTree = "<group>"; };
 		BFEFD8105824B89D79D05DDD /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 		CA0065C3F579D2EE41216986 /* BatteryAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BatteryAlertView.swift; sourceTree = "<group>"; };
 		CFF0F6BE8565E4674E9CE78C /* CircularBatteryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularBatteryView.swift; sourceTree = "<group>"; };
@@ -718,6 +720,7 @@
 				BF9FF9D7E275D4C5BF35E685 /* NotchContentRouter.swift */,
 				A10EFEE840A6D3BAF3072691 /* NotchState.swift */,
 				954F43B91CBCDBF731F607BB /* NotchViewModel.swift */,
+				D10B0BE01001000100000002 /* QuickActionManager.swift */,
 			);
 			path = Notch;
 			sourceTree = "<group>";
@@ -925,6 +928,7 @@
 				8ECBBCB80B96DFF58A71DA04 /* NoInternetAlertView.swift in Sources */,
 				70EC2567A97B718E50B763E1 /* NotchContainer.swift in Sources */,
 				9F744BDBE22C1A8A44E7B61E /* NotchContentRouter.swift in Sources */,
+				D10B0BE01001000100000001 /* QuickActionManager.swift in Sources */,
 				0FBFD9F8840E724AA2F08E58 /* NotchDetector.swift in Sources */,
 				FB7EAC43F296DCFAF3A7F8E6 /* NotchPositionCalculator.swift in Sources */,
 				430975548886F4195A23C9B2 /* NotchShape.swift in Sources */,

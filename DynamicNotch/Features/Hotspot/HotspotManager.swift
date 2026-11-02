@@ -28,6 +28,7 @@ final class HotspotManager: ObservableObject {
 
     // MARK: - Private State
 
+    private let hotspotQueue = DispatchQueue(label: "com.dynamicnotch.hotspot.worker", qos: .utility)
     private var pollTimer: AnyCancellable?
     private var alertedThresholds: Set<Int> = []
     private var simulatedHotspot: HotspotItem? = nil
@@ -68,77 +69,88 @@ final class HotspotManager: ObservableObject {
             return
         }
 
-        guard let iface = CWWiFiClient.shared().interface() else {
-            self.currentWifiSSID = nil
-            if let sim = simulatedHotspot {
-                self.currentHotspot = sim
-                self.isConnectedToHotspot = true
-            } else if isConnectedToHotspot {
-                currentHotspot = nil
-                isConnectedToHotspot = false
-                alertedThresholds.removeAll()
-            }
-            return
-        }
-
-        // 1. FIRST PRIORITY: Live Apple CoreWLAN Tether Device (Instant Hotspot)
-        if let tether = getTetherDeviceInfo(from: iface) {
-            self.simulatedHotspot = nil // Real live hardware detected! Clear simulation immediately!
-            let name = tether.deviceName ?? "iPhone"
-            applyHotspotTelemetry(
-                deviceName: name,
-                battery: tether.batteryLife,
-                signalBars: tether.signalBars,
-                cellularType: tether.cellularType
-            )
-            return
-        }
-
-        // 2. SECOND PRIORITY: Check currently joined network (SSID / lastNetworkJoined)
-        var networkSSID = iface.ssid()
-        var isNetworkHotspot = false
-
-        if networkSSID == nil || networkSSID?.isEmpty == true || networkSSID == "<redacted>" {
-            let selLast = Selector(("lastNetworkJoined"))
-            if iface.responds(to: selLast),
-               let net = iface.perform(selLast)?.takeUnretainedValue() as? CWNetwork {
-                networkSSID = net.ssid
-                isNetworkHotspot = (net as AnyObject).value(forKey: "isPersonalHotspot") as? Bool ?? false
-            }
-        }
-
-        self.currentWifiSSID = networkSSID
-
-        if let currentSSID = networkSSID, !currentSSID.isEmpty, currentSSID != "<redacted>" {
-            let isHotspot = isNetworkHotspot || checkIsPersonalHotspot(interface: iface, ssid: currentSSID)
-            if isHotspot {
-                self.simulatedHotspot = nil // Real live hotspot detected!
-                let deviceName = sanitizeDeviceName(from: currentSSID)
-                let battery = resolveDeviceBattery(for: deviceName, interface: iface)
-                let signal = estimateSignalBars(from: iface.rssiValue())
-
-                applyHotspotTelemetry(
-                    deviceName: deviceName,
-                    battery: battery,
-                    signalBars: signal,
-                    cellularType: nil
-                )
+        hotspotQueue.async { [weak self] in
+            guard let self else { return }
+            guard let iface = CWWiFiClient.shared().interface() else {
+                DispatchQueue.main.async {
+                    self.currentWifiSSID = nil
+                    if let sim = self.simulatedHotspot {
+                        self.currentHotspot = sim
+                        self.isConnectedToHotspot = true
+                    } else if self.isConnectedToHotspot {
+                        self.currentHotspot = nil
+                        self.isConnectedToHotspot = false
+                        self.alertedThresholds.removeAll()
+                    }
+                }
                 return
             }
-        }
 
-        // 3. THIRD PRIORITY: If user explicitly triggered a debug simulation bench, preserve it
-        if let sim = simulatedHotspot {
-            self.currentHotspot = sim
-            self.isConnectedToHotspot = true
-            return
-        }
+            // 1. FIRST PRIORITY: Live Apple CoreWLAN Tether Device (Instant Hotspot)
+            if let tether = self.getTetherDeviceInfo(from: iface) {
+                let name = tether.deviceName ?? "iPhone"
+                DispatchQueue.main.async {
+                    self.simulatedHotspot = nil // Real live hardware detected!
+                    self.applyHotspotTelemetry(
+                        deviceName: name,
+                        battery: tether.batteryLife,
+                        signalBars: tether.signalBars,
+                        cellularType: tether.cellularType
+                    )
+                }
+                return
+            }
 
-        // 4. No active hotspot connection
-        if isConnectedToHotspot {
-            self.currentHotspot = nil
-            self.isConnectedToHotspot = false
-            self.alertedThresholds.removeAll()
+            // 2. SECOND PRIORITY: Check currently joined network (SSID / lastNetworkJoined)
+            var networkSSID = iface.ssid()
+            var isNetworkHotspot = false
+
+            if networkSSID == nil || networkSSID?.isEmpty == true || networkSSID == "<redacted>" {
+                let selLast = Selector(("lastNetworkJoined"))
+                if iface.responds(to: selLast),
+                   let net = iface.perform(selLast)?.takeUnretainedValue() as? CWNetwork {
+                    networkSSID = net.ssid
+                    isNetworkHotspot = (net as AnyObject).value(forKey: "isPersonalHotspot") as? Bool ?? false
+                }
+            }
+
+            if let currentSSID = networkSSID, !currentSSID.isEmpty, currentSSID != "<redacted>" {
+                let isHotspot = isNetworkHotspot || self.checkIsPersonalHotspot(interface: iface, ssid: currentSSID)
+                if isHotspot {
+                    let deviceName = self.sanitizeDeviceName(from: currentSSID)
+                    let battery = self.resolveDeviceBattery(for: deviceName, interface: iface)
+                    let signal = self.estimateSignalBars(from: iface.rssiValue())
+
+                    DispatchQueue.main.async {
+                        self.currentWifiSSID = currentSSID
+                        self.simulatedHotspot = nil
+                        self.applyHotspotTelemetry(
+                            deviceName: deviceName,
+                            battery: battery,
+                            signalBars: signal,
+                            cellularType: nil
+                        )
+                    }
+                    return
+                }
+            }
+
+            DispatchQueue.main.async {
+                self.currentWifiSSID = networkSSID
+                // 3. THIRD PRIORITY: If user explicitly triggered a debug simulation bench, preserve it
+                if let sim = self.simulatedHotspot {
+                    self.currentHotspot = sim
+                    self.isConnectedToHotspot = true
+                    return
+                }
+
+                // 4. No active hotspot connection
+                if self.isConnectedToHotspot {
+                    self.currentHotspot = nil
+                    self.isConnectedToHotspot = false
+                    self.alertedThresholds.removeAll()
+                }
+            }
         }
     }
 

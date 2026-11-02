@@ -103,11 +103,11 @@ final class AirPodsCardWindowController: NSObject {
         p.ignoresMouseEvents          = false
         p.acceptsMouseMovedEvents     = true
         p.isReleasedWhenClosed        = false
-        p.canHide                     = false
+        p.canHide                     = true
         p.hidesOnDeactivate           = false
         p.collectionBehavior          = [
             .canJoinAllSpaces,
-            .stationary,
+            .transient,
             .ignoresCycle,
             .fullScreenAuxiliary
         ]

@@ -125,18 +125,23 @@ final class LockScreenObserver: ObservableObject {
     }
 
     private func pollLockState() {
-        if let sessionDict = CGSessionCopyCurrentDictionary() as? [String: Any] {
-            let locked: Bool
-            if let isLockedNum = sessionDict["CGSSessionScreenIsLocked"] as? NSNumber {
-                locked = isLockedNum.boolValue
-            } else if let isLockedBool = sessionDict["CGSSessionScreenIsLocked"] as? Bool {
-                locked = isLockedBool
-            } else {
-                locked = false
-            }
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let self else { return }
+            if let sessionDict = CGSessionCopyCurrentDictionary() as? [String: Any] {
+                let locked: Bool
+                if let isLockedNum = sessionDict["CGSSessionScreenIsLocked"] as? NSNumber {
+                    locked = isLockedNum.boolValue
+                } else if let isLockedBool = sessionDict["CGSSessionScreenIsLocked"] as? Bool {
+                    locked = isLockedBool
+                } else {
+                    locked = false
+                }
 
-            if self.isLocked != locked {
-                self.isLocked = locked
+                DispatchQueue.main.async {
+                    if self.isLocked != locked {
+                        self.isLocked = locked
+                    }
+                }
             }
         }
     }

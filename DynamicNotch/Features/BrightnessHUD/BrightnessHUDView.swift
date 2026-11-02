@@ -61,10 +61,12 @@ struct BrightnessHUDView: View {
                     isHighlighted: isDraggingBar || isHoveringBar,
                     onScrub: { newLevel in
                         isDraggingBar = true
+                        NotchViewModel.shared?.beginControlInteraction()
                         onSetBrightness?(newLevel)
                     },
                     onScrubEnded: {
                         isDraggingBar = false
+                        NotchViewModel.shared?.endControlInteraction()
                     }
                 )
                 .frame(height: 16)
@@ -72,6 +74,7 @@ struct BrightnessHUDView: View {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         isHoveringBar = hovering
                     }
+                    NotchViewModel.shared?.isHoveringSlider = hovering
                 }
 
                 Text("\(numericLevel)")

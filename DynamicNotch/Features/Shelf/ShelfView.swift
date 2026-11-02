@@ -226,6 +226,7 @@ struct ShelfView: View {
             )
             // Enable dragging item OUT of the shelf to any destination
             .onDrag {
+                NotchViewModel.shared?.beginControlInteraction()
                 let provider = NSItemProvider(object: item.url as NSURL)
                 provider.registerDataRepresentation(
                     forTypeIdentifier: localShelfDragTypeIdentifier,

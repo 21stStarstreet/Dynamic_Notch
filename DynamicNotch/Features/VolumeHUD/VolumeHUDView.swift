@@ -124,10 +124,12 @@ struct VolumeHUDView: View {
                         isHighlighted: isDraggingBar || isHoveringBar,
                         onScrub: { newLevel in
                             isDraggingBar = true
+                            NotchViewModel.shared?.beginControlInteraction()
                             onSetVolume?(newLevel)
                         },
                         onScrubEnded: {
                             isDraggingBar = false
+                            NotchViewModel.shared?.endControlInteraction()
                         }
                     )
                     .frame(height: 16)
@@ -135,6 +137,7 @@ struct VolumeHUDView: View {
                         withAnimation(.easeInOut(duration: 0.15)) {
                             isHoveringBar = hovering
                         }
+                        NotchViewModel.shared?.isHoveringSlider = hovering
                     }
 
                     Text("\(numericLevel)")
@@ -196,10 +199,12 @@ struct VolumeHUDView: View {
                             isHighlighted: isDraggingInputBar || isHoveringInputBar,
                             onScrub: { newLevel in
                                 isDraggingInputBar = true
+                                NotchViewModel.shared?.beginControlInteraction()
                                 audioManager.setDefaultInputVolume(newLevel)
                             },
                             onScrubEnded: {
                                 isDraggingInputBar = false
+                                NotchViewModel.shared?.endControlInteraction()
                             }
                         )
                         .frame(height: 16)
@@ -207,6 +212,7 @@ struct VolumeHUDView: View {
                             withAnimation(.easeInOut(duration: 0.15)) {
                                 isHoveringInputBar = hovering
                             }
+                            NotchViewModel.shared?.isHoveringSlider = hovering
                         }
 
                         Text("\(numericInputLevel)")

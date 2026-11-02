@@ -53,13 +53,24 @@ final class ScreenRecordingObserver: ObservableObject {
     }
 
     private func startMonitoring() {
-        // Fast polling timer (every 0.4s) for smooth state synchronization
-        timer = Timer.scheduledTimer(withTimeInterval: 0.4, repeats: true) { [weak self] _ in
+        // Periodic background fallback check (every 1.0s)
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.checkRecordingState()
         }
 
         // Instant reaction via NSWorkspace notifications
         let center = NSWorkspace.shared.notificationCenter
+
+        let launchObs = center.addObserver(
+            forName: NSWorkspace.didLaunchApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                  app.bundleIdentifier == "com.apple.screencaptureui" else { return }
+            self?.checkRecordingState()
+        }
+        workspaceObservers.append(launchObs)
 
         // When screencaptureui deactivates (countdown reaches 0 and recording begins!)
         let deactObs = center.addObserver(
@@ -109,14 +120,21 @@ final class ScreenRecordingObserver: ObservableObject {
     }
 
     private static func detectActiveScreenRecording() -> (isRecording: Bool, startDate: Date?) {
+        // Fast Gate: If CoreGraphics reports no screen watcher is active AND no screencaptureui app is running,
+        // screen recording CANNOT be active. Skip expensive process listing and lsof forks!
+        let screencaptureApp = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.screencaptureui").first
+        let hasWatcher = CGSIsScreenWatcherPresent()
+
+        if screencaptureApp == nil && !hasWatcher {
+            return (false, nil)
+        }
+
         let candidates = findCandidateRecordingPIDs()
 
         // 1. Toolbar & Countdown Suppression:
         // When the screenshot overlay (toolbar or countdown window) is active and frontmost,
         // recording has NOT started yet.
-        let isScreenshotUIActive = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.screencaptureui")
-            .contains(where: { $0.isActive })
-        if isScreenshotUIActive {
+        if let app = screencaptureApp, app.isActive {
             return (false, nil)
         }
 
@@ -126,7 +144,6 @@ final class ScreenRecordingObserver: ObservableObject {
         }
 
         // 2. Check each candidate process for an actively open `.mov` / `.mp4` video file handle.
-        // During toolbar setup or countdown, the file handle is NOT open yet.
         for candidate in candidates {
             let (isOpen, _, fileStartDate) = checkOpenVideoFile(pid: candidate.pid)
             if isOpen {
@@ -135,9 +152,7 @@ final class ScreenRecordingObserver: ObservableObject {
         }
 
         // 3. Fallback: CoreGraphics Screen Watcher check
-        // If WindowServer marks screen watcher as present, and screencaptureui is running
-        // in the background (i.e. not in toolbar or countdown mode), capture is underway.
-        if CGSIsScreenWatcherPresent() {
+        if hasWatcher {
             return (true, Date())
         }
 

@@ -4,6 +4,8 @@
 // Observes display brightness via Apple's DisplayServices framework.
 // Features Smart Intent Filtering to distinguish deliberate user actions (F1/F2 keys, Control Center)
 // from ambient light sensor micro-drifts (Adaptive Brightness / True Tone).
+// Hardware IPC queries execute entirely on a dedicated background worker queue, completely
+// freeing the Main RunLoop (ProMotion 120 FPS) from blocking WindowServer calls.
 
 import AppKit
 import Combine
@@ -27,13 +29,12 @@ final class BrightnessObserver: ObservableObject {
     private var getBrightnessFunc: DisplayServicesGetBrightnessType?
     private var setBrightnessFunc: DisplayServicesSetBrightnessType?
 
-    private var pollTimer: AnyCancellable?
+    private let workerQueue = DispatchQueue(label: "com.dynamicnotch.brightness.worker", qos: .userInteractive)
+    private var pollTimer: DispatchSourceTimer?
     private var lastReportedBrightness: Float = -1.0
-    private var lastManualChangeTime: Date = .distantPast
+    private var lastActivityTime: Date = .distantPast
 
     /// Threshold for detecting genuine display brightness adjustments (0.009 ≈ 0.9%).
-    /// Captures F1/F2 keys (0.0625), Option+Shift+F1/F2 fine steps (0.0156), Control Center slider,
-    /// and macOS adaptive brightness transitions, while filtering out raw hardware sensor jitter (< 0.002).
     private let stepThreshold: Float = 0.009
 
     // MARK: - Init / Deinit
@@ -46,6 +47,7 @@ final class BrightnessObserver: ObservableObject {
 
     deinit {
         pollTimer?.cancel()
+        pollTimer = nil
     }
 
     // MARK: - Framework Binding
@@ -65,14 +67,20 @@ final class BrightnessObserver: ObservableObject {
     // MARK: - Manual Control
 
     func setBrightness(_ newBrightness: Float) {
-        guard let setBrightness = setBrightnessFunc else { return }
         let clamped = max(0.0, min(1.0, newBrightness))
-        let displayID = CGMainDisplayID()
-        let status = setBrightness(displayID, clamped)
-        if status == 0 {
-            lastReportedBrightness = clamped
-            brightness = clamped
-            brightnessChangeEvent = clamped
+        lastReportedBrightness = clamped
+        lastActivityTime = Date()
+
+        workerQueue.async { [weak self] in
+            guard let self, let setBrightness = self.setBrightnessFunc else { return }
+            let displayID = CGMainDisplayID()
+            let status = setBrightness(displayID, clamped)
+            if status == 0 {
+                DispatchQueue.main.async {
+                    self.brightness = clamped
+                    self.brightnessChangeEvent = clamped
+                }
+            }
         }
     }
 
@@ -88,28 +96,38 @@ final class BrightnessObserver: ObservableObject {
     }
 
     private func seedInitialBrightness() {
-        if let current = readCurrentBrightness() {
-            brightness = current
-            lastReportedBrightness = current
+        workerQueue.async { [weak self] in
+            guard let self else { return }
+            if let current = self.readCurrentBrightness() {
+                DispatchQueue.main.async {
+                    self.brightness = current
+                    self.lastReportedBrightness = current
+                }
+            }
         }
     }
 
     private func startPolling() {
-        // 80ms interval ensures instant response to F1/F2 key taps and adaptive brightness
-        pollTimer = Timer.publish(every: 0.08, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.evaluateBrightness()
-            }
+        pollTimer?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: workerQueue)
+        // Adaptive 100ms background polling keeps F1/F2 keys instant without blocking Main RunLoop
+        timer.schedule(deadline: .now(), repeating: .milliseconds(100), leeway: .milliseconds(20))
+        timer.setEventHandler { [weak self] in
+            self?.evaluateBrightnessOnWorker()
+        }
+        timer.resume()
+        pollTimer = timer
     }
 
-    private func evaluateBrightness() {
+    private func evaluateBrightnessOnWorker() {
         guard let current = readCurrentBrightness() else { return }
 
-        // If uninitialized, seed without firing
+        // Initial baseline seed
         if lastReportedBrightness < 0 {
-            brightness = current
             lastReportedBrightness = current
+            DispatchQueue.main.async {
+                self.brightness = current
+            }
             return
         }
 
@@ -117,8 +135,11 @@ final class BrightnessObserver: ObservableObject {
 
         if delta >= stepThreshold {
             lastReportedBrightness = current
-            brightness = current
-            brightnessChangeEvent = current
+            lastActivityTime = Date()
+            DispatchQueue.main.async {
+                self.brightness = current
+                self.brightnessChangeEvent = current
+            }
         }
     }
 }

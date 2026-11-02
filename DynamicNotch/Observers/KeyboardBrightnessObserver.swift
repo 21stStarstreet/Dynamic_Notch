@@ -42,7 +42,8 @@ final class KeyboardBrightnessObserver: ObservableObject {
 
     // MARK: - Monitoring & Polling
 
-    private var pollTimer: AnyCancellable?
+    private let workerQueue = DispatchQueue(label: "com.dynamicnotch.keyboardbrightness.worker", qos: .userInteractive)
+    private var pollTimer: DispatchSourceTimer?
     private var systemKeyMonitorGlobal: Any?
     private var systemKeyMonitorLocal: Any?
     private var lastReportedBrightness: Float = -1.0
@@ -166,34 +167,42 @@ final class KeyboardBrightnessObserver: ObservableObject {
     // MARK: - Seed & Polling
 
     private func seedInitialBrightness() {
-        if let current = readCurrentBrightness() {
-            brightness = current
-            lastReportedBrightness = current
+        workerQueue.async { [weak self] in
+            guard let self else { return }
+            if let current = self.readCurrentBrightness() {
+                DispatchQueue.main.async {
+                    self.brightness = current
+                    self.lastReportedBrightness = current
+                }
+            }
         }
     }
 
     private func startPolling() {
-        // 80ms interval ensures instant pickup of Control Center adjustments
-        pollTimer = Timer.publish(every: 0.08, on: .main, in: .common)
-            .autoconnect()
-            .sink { [weak self] _ in
-                self?.pollBrightness()
-            }
+        pollTimer?.cancel()
+        let timer = DispatchSource.makeTimerSource(queue: workerQueue)
+        timer.schedule(deadline: .now(), repeating: .milliseconds(100), leeway: .milliseconds(20))
+        timer.setEventHandler { [weak self] in
+            self?.pollBrightnessOnWorker()
+        }
+        timer.resume()
+        pollTimer = timer
     }
 
-    private func pollBrightness() {
+    private func pollBrightnessOnWorker() {
         guard let current = readCurrentBrightness() else { return }
 
         // Initial baseline seed
         if lastReportedBrightness < 0 {
             lastReportedBrightness = current
-            brightness = current
+            DispatchQueue.main.async {
+                self.brightness = current
+            }
             return
         }
 
         let delta = abs(current - lastReportedBrightness)
         lastReportedBrightness = current
-        brightness = current
 
         // Suppress poller while user is actively adjusting via keys or DynamicNotch
         // to prevent feedback loops while hardware LED ramps.
@@ -201,12 +210,20 @@ final class KeyboardBrightnessObserver: ObservableObject {
 
         // SMART INTENT FILTER:
         // Ambient Light Sensor (ALS) transitions and micro-drifts happen continuously
-        // with small sample-to-sample deltas (< 0.045 per 80ms).
+        // with small sample-to-sample deltas (< 0.045 per sample).
         // If delta is below 0.045, it is an automatic sensor adjustment -> keep silent, do not pop up HUD!
-        guard delta >= manualAdjustmentThreshold else { return }
+        guard delta >= manualAdjustmentThreshold else {
+            DispatchQueue.main.async {
+                self.brightness = current
+            }
+            return
+        }
 
-        // Significant jump (>= 4.5% in 80ms) indicates deliberate user interaction (e.g. Control Center slider)
-        brightnessChangeEvent = current
+        // Significant jump (>= 4.5% in 100ms) indicates deliberate user interaction (e.g. Control Center slider)
+        DispatchQueue.main.async {
+            self.brightness = current
+            self.brightnessChangeEvent = current
+        }
     }
 
     // MARK: - Media Illumination Key Monitor

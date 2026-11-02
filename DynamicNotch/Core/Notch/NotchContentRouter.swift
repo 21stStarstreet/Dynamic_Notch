@@ -260,6 +260,7 @@ struct NotchContentRouter: View {
         case .cameraMirror:
             CameraMirrorView(onDismiss: { [weak viewModel] in
                 viewModel?.dismissCurrentAlert()
+                viewModel?.collapseToIdleOrCompact()
             })
 
         case .welcomeGreeting:
@@ -594,199 +595,1307 @@ struct AppleCalendarSymbolView: View {
     }
 }
 
-// MARK: - Quick Action Menu View (Proportionally Spaced Two-Page Carousel Dock)
+// MARK: - Apple More Symbol View (Gray "..." Ellipsis Button)
+
+struct AppleMoreSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(white: 0.32),
+                            Color(white: 0.20)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.26), lineWidth: 0.5)
+                )
+
+            Image(systemName: "ellipsis")
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - Spaces Symbol View (Desktop Spaces)
+
+struct AppleSpacesSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(white: 0.32),
+                            Color(white: 0.20)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.26), lineWidth: 0.5)
+                )
+
+            Image(systemName: "square.split.2x1.fill")
+                .font(.system(size: 19, weight: .bold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - File Shelf Symbol View
+
+struct AppleShelfSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.38, green: 0.32, blue: 0.86),
+                            Color(red: 0.23, green: 0.17, blue: 0.68)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.5)
+                )
+
+            Image(systemName: "tray.full.fill")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - Lock Screen Symbol View
+
+struct AppleLockScreenSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 0.36, green: 0.38, blue: 0.44),
+                            Color(red: 0.20, green: 0.22, blue: 0.28)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.5)
+                )
+
+            Image(systemName: "lock.fill")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - Mute Symbol View
+
+struct AppleMuteSymbolView: View {
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 11, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [
+                            Color(red: 1.0, green: 0.28, blue: 0.24),
+                            Color(red: 0.85, green: 0.16, blue: 0.14)
+                        ],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 11, style: .continuous)
+                        .stroke(Color.white.opacity(0.24), lineWidth: 0.5)
+                )
+
+            Image(systemName: "speaker.slash.fill")
+                .font(.system(size: 20, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .frame(width: 46, height: 46)
+        .shadow(color: Color.black.opacity(0.18), radius: 2, y: 1)
+    }
+}
+
+// MARK: - Quick Action Symbol Factory
+
+@ViewBuilder
+func quickActionSymbolView(for action: QuickActionType) -> some View {
+    switch action {
+    case .notes:
+        AppleNotesSymbolView()
+    case .reminders:
+        AppleRemindersSymbolView()
+    case .timer:
+        AppleTimerSymbolView()
+    case .sound:
+        AppleSoundSymbolView()
+    case .eject:
+        AppleEjectSymbolView()
+    case .focus:
+        AppleFocusSymbolView()
+    case .mirror:
+        AppleMirrorSymbolView()
+    case .screenshotOCR:
+        AppleScreenshotSymbolView()
+    case .spaces:
+        AppleSpacesSymbolView()
+    case .clipboard:
+        AppleClipboardSymbolView()
+    case .shelf:
+        AppleShelfSymbolView()
+    case .calendar:
+        AppleCalendarSymbolView()
+    case .lockScreen:
+        AppleLockScreenSymbolView()
+    case .mute:
+        AppleMuteSymbolView()
+    }
+}
+
+// MARK: - Circular Action Item View (Dial Button with iOS Jiggle Wobble, Magnification Wave & Haptics)
+
+struct CircularActionItemView<SymbolContent: View>: View {
+
+    let title: String
+    let helpText: String
+    var size: CGFloat = 46.0
+    var magnificationScale: CGFloat = 1.0
+    var isEditMode: Bool = false
+    var slotIndex: Int = 0
+    var onLongPress: (() -> Void)? = nil
+    var onEditTap: (() -> Void)? = nil
+    var onResetToDefaults: (() -> Void)? = nil
+    @ViewBuilder let symbol: () -> SymbolContent
+    let action: () -> Void
+
+    @State private var isPressed: Bool = false
+    @State private var isJiggling: Bool = false
+    @State private var isHovered: Bool = false
+    @State private var longPressTriggered: Bool = false
+    @State private var wasInEditModeAtPressDown: Bool = false
+
+    private var phaseDelay: Double {
+        Double(slotIndex % 4) * 0.035
+    }
+
+    private var effectiveScale: CGFloat {
+        if isPressed {
+            return magnificationScale * 0.90
+        }
+        if isEditMode && isHovered {
+            return 1.06
+        }
+        return magnificationScale
+    }
+
+    private var currentJiggleAngle: Double {
+        guard isEditMode else { return 0.0 }
+        let baseAngle: Double = isJiggling ? 2.4 : -2.4
+        let directionMultiplier: Double = (slotIndex % 2 == 0) ? 1.0 : -1.0
+        return baseAngle * directionMultiplier
+    }
+
+    var body: some View {
+        Button {
+            if longPressTriggered {
+                // Long press just activated edit mode; consume the mouse-up without firing actions
+                longPressTriggered = false
+                return
+            }
+            if wasInEditModeAtPressDown {
+                NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                    onEditTap?()
+                }
+            } else {
+                NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                action()
+            }
+        } label: {
+            ZStack(alignment: .topTrailing) {
+                symbol()
+                    .scaleEffect(effectiveScale)
+                    .shadow(
+                        color: (magnificationScale > 1.02 || (isEditMode && isHovered))
+                            ? Color.white.opacity(0.20)
+                            : Color.black.opacity(0.22),
+                        radius: (magnificationScale > 1.02 || (isEditMode && isHovered)) ? 6.0 : 2.0,
+                        y: (magnificationScale > 1.02 || (isEditMode && isHovered)) ? 3.0 : 1.0
+                    )
+
+                if isEditMode {
+                    ZStack {
+                        Circle()
+                            .fill(Color(white: 0.18).opacity(0.96))
+                            .frame(width: 17, height: 17)
+                            .overlay(
+                                Circle()
+                                    .stroke(Color.white.opacity(0.38), lineWidth: 0.75)
+                            )
+                            .shadow(color: Color.black.opacity(0.40), radius: 2, y: 1)
+
+                        Image(systemName: "pencil")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(.white)
+                    }
+                    .offset(x: 4, y: -4)
+                    .transition(.scale(scale: 0.4).combined(with: .opacity))
+                }
+            }
+            .rotationEffect(.degrees(currentJiggleAngle))
+        }
+        .buttonStyle(.plain)
+        .help(isEditMode ? "Eylemi Değiştirmek İçin Tıkla" : helpText)
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.20, dampingFraction: 0.80)) {
+                isHovered = hovering
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isPressed {
+                        withAnimation(.easeOut(duration: 0.08)) {
+                            isPressed = true
+                        }
+                        wasInEditModeAtPressDown = isEditMode
+                        longPressTriggered = false
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
+                        isPressed = false
+                    }
+                }
+        )
+        .simultaneousGesture(
+            LongPressGesture(minimumDuration: 0.45)
+                .onEnded { _ in
+                    if !isEditMode {
+                        longPressTriggered = true
+                        NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .default)
+                        withAnimation(.spring(response: 0.28, dampingFraction: 0.76)) {
+                            isPressed = false
+                        }
+                        withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                            onLongPress?()
+                        }
+                    }
+                }
+        )
+        .contextMenu {
+            if !isEditMode {
+                Button {
+                    NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .default)
+                    withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                        onLongPress?()
+                    }
+                } label: {
+                    Label("Menüyü Düzenle", systemImage: "pencil.circle")
+                }
+            } else {
+                Button {
+                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                        onEditTap?()
+                    }
+                } label: {
+                    Label("Eylemi Değiştir...", systemImage: "arrow.triangle.2.circlepath")
+                }
+            }
+
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    onResetToDefaults?()
+                }
+            } label: {
+                Label("Varsayılanlara Sıfırla", systemImage: "arrow.counterclockwise")
+            }
+        }
+        .onAppear {
+            if isEditMode {
+                startJiggle()
+            }
+        }
+        .onChange(of: isEditMode) { edit in
+            if edit {
+                startJiggle()
+            } else {
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.80)) {
+                    isJiggling = false
+                }
+            }
+        }
+    }
+
+    private func startJiggle() {
+        withAnimation(
+            .easeInOut(duration: 0.12)
+            .repeatForever(autoreverses: true)
+            .delay(phaseDelay)
+        ) {
+            isJiggling = true
+        }
+    }
+}
+
+struct DesktopCardButtonStyle: ButtonStyle {
+    let isHovered: Bool
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.98 : (isHovered ? 1.015 : 1.0))
+            .animation(.spring(response: 0.20, dampingFraction: 0.78), value: configuration.isPressed)
+            .animation(.spring(response: 0.22, dampingFraction: 0.80), value: isHovered)
+    }
+}
+
+// MARK: - Standard Apple Modal Close Button (Unified Modal Component)
+
+struct NotchCloseButton: View {
+    var tooltip: String = "Kapat"
+    var action: () -> Void
+
+    @State private var isHovered: Bool = false
+    @State private var isPressed: Bool = false
+
+    var body: some View {
+        Button {
+            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+            action()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 10, weight: .bold))
+                .foregroundColor(.white.opacity(isHovered ? 1.0 : 0.85))
+                .frame(width: 28, height: 28)
+                .background(
+                    Circle()
+                        .fill(isHovered ? Color.white.opacity(0.22) : Color.white.opacity(0.12))
+                        .overlay(
+                            Circle()
+                                .stroke(isHovered ? Color.white.opacity(0.35) : Color.white.opacity(0.20), lineWidth: 0.5)
+                        )
+                )
+                .scaleEffect(isPressed ? 0.92 : (isHovered ? 1.05 : 1.0))
+        }
+        .buttonStyle(.plain)
+        .help(tooltip)
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                isHovered = hovering
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isPressed {
+                        withAnimation(.easeOut(duration: 0.08)) {
+                            isPressed = true
+                        }
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
+                        isPressed = false
+                    }
+                }
+        )
+    }
+}
+
+typealias ModalCloseButton = NotchCloseButton
+
+// MARK: - Desktop Spaces Switcher View (Mission Control Spaces Switcher)
+
+struct DesktopSpacesSwitcherView: View {
+
+    @ObservedObject var viewModel: NotchViewModel
+    let boxSize: CGFloat
+    let onBack: () -> Void
+
+    @State private var groups: [DisplaySpacesGroup] = []
+    @State private var selectedGroupUUID: String = ""
+    @State private var hoveredSpaceID: UInt64? = nil
+    @State private var isFooterHovered: Bool = false
+    @State private var isFooterPressed: Bool = false
+    @State private var isAccessibilityTrusted: Bool = AXIsProcessTrusted()
+
+    private var activeSpaces: [DesktopSpace] {
+        groups.first(where: { $0.displayUUID == selectedGroupUUID })?.spaces ?? []
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // MARK: - Header Bar (Symmetrical Back, Title, Close)
+            headerBar
+                .padding(.bottom, 12)
+
+            // MARK: - Accessibility Notice Pill (if permission required)
+            if !isAccessibilityTrusted {
+                accessibilityNoticePill
+                    .padding(.bottom, 10)
+            }
+
+            // MARK: - Multi-Display Selector Tabs (if 2+ monitors)
+            if groups.count > 1 {
+                displayTabs
+                    .padding(.bottom, 10)
+            }
+
+            // MARK: - Desktop Cards List
+            if activeSpaces.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "desktopcomputer")
+                        .font(.system(size: 22))
+                        .foregroundColor(.white.opacity(0.40))
+                    Text("Masaüstüler Aranıyor...")
+                        .font(.system(size: 11, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.60))
+                }
+                .frame(maxHeight: .infinity)
+            } else if activeSpaces.count <= 3 {
+                // Fixed stacked cards for 1 to 3 desktops (Symmetrical, no scrolling, Apple-grade height)
+                VStack(spacing: 8) {
+                    ForEach(activeSpaces) { space in
+                        desktopCard(for: space, height: cardHeightForCount(activeSpaces.count))
+                    }
+                }
+            } else {
+                // Scrollable list for 4+ desktops
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 7) {
+                        ForEach(activeSpaces) { space in
+                            desktopCard(for: space, height: 42)
+                        }
+                    }
+                    .padding(.vertical, 2)
+                }
+                .frame(maxHeight: 116)
+            }
+
+            Spacer(minLength: 8)
+
+            // MARK: - Footer Button: Mission Control (Apple Liquid Glass Pill)
+            footerMissionControlButton
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 26)
+        .padding(.bottom, 22)
+        .frame(width: boxSize, height: boxSize)
+        .onAppear {
+            refreshSpaces()
+            isAccessibilityTrusted = AXIsProcessTrusted()
+        }
+    }
+
+    private func cardHeightForCount(_ count: Int) -> CGFloat {
+        switch count {
+        case 1:
+            return 52.0
+        case 2:
+            return 48.0
+        case 3:
+            return 40.0
+        default:
+            return 42.0
+        }
+    }
+
+    private var headerBar: some View {
+        HStack(spacing: 0) {
+            // Left: Back button to dial menu
+            Button {
+                NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                onBack()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.90))
+                    .frame(width: 28, height: 28)
+                    .background(
+                        Circle()
+                            .fill(Color.white.opacity(0.12))
+                            .overlay(Circle().stroke(Color.white.opacity(0.20), lineWidth: 0.5))
+                    )
+            }
+            .buttonStyle(.plain)
+            .help("Geri (Hızlı Erişim)")
+
+            Spacer()
+
+            // Center: Title + Subtitle
+            VStack(spacing: 1.5) {
+                Text("Masaüstüler")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white)
+
+                if !activeSpaces.isEmpty {
+                    Text("\(activeSpaces.count) Alan")
+                        .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                        .foregroundColor(.white.opacity(0.50))
+                }
+            }
+
+            Spacer()
+
+            // Right: Symmetrical placeholder balancing the back button
+            Color.clear
+                .frame(width: 28, height: 28)
+        }
+        .frame(height: 28)
+    }
+
+    private var accessibilityNoticePill: some View {
+        Button {
+            let options: NSDictionary = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true]
+            _ = AXIsProcessTrustedWithOptions(options as CFDictionary)
+            if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") {
+                NSWorkspace.shared.open(url)
+            }
+        } label: {
+            HStack(spacing: 5) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 9.5, weight: .bold))
+                    .foregroundColor(Color(red: 1.0, green: 0.80, blue: 0.0))
+                Text("Geçiş için Erişilebilirlik İzni Ver")
+                    .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                    .foregroundColor(.white.opacity(0.90))
+                    .lineLimit(1)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                Capsule()
+                    .fill(Color(red: 1.0, green: 0.80, blue: 0.0).opacity(0.18))
+                    .overlay(Capsule().stroke(Color(red: 1.0, green: 0.80, blue: 0.0).opacity(0.35), lineWidth: 0.5))
+            )
+        }
+        .buttonStyle(.plain)
+        .help("macOS Sistem Ayarları > Gizlilik ve Güvenlik > Erişilebilirlik iznini aç")
+    }
+
+    private var displayTabs: some View {
+        HStack(spacing: 4) {
+            ForEach(groups) { group in
+                let isSelected = (group.displayUUID == selectedGroupUUID)
+                Button {
+                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                    withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
+                        selectedGroupUUID = group.displayUUID
+                    }
+                } label: {
+                    Text(group.displayName)
+                        .font(.system(size: 10, weight: isSelected ? .bold : .medium))
+                        .foregroundColor(isSelected ? .white : .white.opacity(0.60))
+                        .lineLimit(1)
+                        .padding(.horizontal, 7)
+                        .padding(.vertical, 3)
+                        .background(
+                            Capsule()
+                                .fill(isSelected ? Color.white.opacity(0.22) : Color.white.opacity(0.06))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(isSelected ? Color.white.opacity(0.35) : Color.white.opacity(0.10), lineWidth: 0.5)
+                                )
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private var footerMissionControlButton: some View {
+        Button {
+            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+            viewModel.collapseToIdleOrCompact()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
+                NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Mission Control.app"))
+            }
+        } label: {
+            HStack(spacing: 7) {
+                Image(systemName: "rectangle.3.group.fill")
+                    .font(.system(size: 11.5, weight: .semibold))
+                Text("Mission Control'ü Aç")
+                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+            }
+            .foregroundColor(.white.opacity(0.92))
+            .frame(maxWidth: .infinity)
+            .frame(height: 34)
+            .background(
+                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                    .fill(isFooterHovered ? Color.white.opacity(0.18) : Color.white.opacity(0.10))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 11, style: .continuous)
+                            .stroke(isFooterHovered ? Color.white.opacity(0.32) : Color.white.opacity(0.15), lineWidth: 0.5)
+                    )
+            )
+            .scaleEffect(isFooterPressed ? 0.98 : (isFooterHovered ? 1.015 : 1.0))
+        }
+        .buttonStyle(.plain)
+        .help("Tüm masaüstüleri ve pencereleri görmek için Mission Control'ü aç")
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                isFooterHovered = hovering
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isFooterPressed {
+                        withAnimation(.easeOut(duration: 0.08)) {
+                            isFooterPressed = true
+                        }
+                    }
+                }
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) {
+                        isFooterPressed = false
+                    }
+                }
+        )
+    }
+
+    private func refreshSpaces() {
+        let currentScreen = ScreenHelper.screen(containing: NSEvent.mouseLocation) ?? ScreenHelper.targetScreen
+        let fetched = SkyLightSpaceBridge.shared.fetchAllSpaceGroups(targetScreen: currentScreen)
+        groups = fetched
+        if selectedGroupUUID.isEmpty || !fetched.contains(where: { $0.displayUUID == selectedGroupUUID }) {
+            selectedGroupUUID = fetched.first(where: { $0.isTargetDisplay })?.displayUUID ?? fetched.first?.displayUUID ?? ""
+        }
+    }
+
+    private func desktopCard(for space: DesktopSpace, height: CGFloat) -> some View {
+        let isHovered = (hoveredSpaceID == space.id)
+
+        return Button {
+            handleSelectSpace(space)
+        } label: {
+            HStack(spacing: 9) {
+                // Desktop Number / Icon Squircle
+                cardIcon(for: space)
+
+                // Desktop Name & Subtitle
+                cardLabel(for: space)
+
+                Spacer(minLength: 4)
+
+                // Current indicator or Arrow
+                cardStatus(for: space, isHovered: isHovered)
+            }
+            .padding(.horizontal, 11)
+            .frame(maxWidth: .infinity)
+            .frame(height: height)
+            .background(cardBackground(isCurrent: space.isCurrent, isHovered: isHovered))
+        }
+        .buttonStyle(DesktopCardButtonStyle(isHovered: isHovered))
+        .help(space.isCurrent ? "Şu an bu masaüstündesiniz" : "\(space.name) masaüstüne geç")
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                hoveredSpaceID = hovering ? space.id : nil
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func cardIcon(for space: DesktopSpace) -> some View {
+        let colors: [Color] = space.isCurrent
+            ? [Color(red: 0.15, green: 0.50, blue: 1.0), Color(red: 0.10, green: 0.38, blue: 0.88)]
+            : [Color.white.opacity(0.18), Color.white.opacity(0.10)]
+
+        ZStack {
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(LinearGradient(colors: colors, startPoint: .top, endPoint: .bottom))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(space.isCurrent ? Color.white.opacity(0.40) : Color.white.opacity(0.18), lineWidth: 0.5)
+                )
+
+            if space.isFullscreenApp {
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white)
+            } else {
+                Text("\(space.index)")
+                    .font(.system(size: 12.5, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+            }
+        }
+        .frame(width: 28, height: 28)
+    }
+
+    @ViewBuilder
+    private func cardLabel(for space: DesktopSpace) -> some View {
+        VStack(alignment: .leading, spacing: 1.5) {
+            Text(space.name)
+                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+                .lineLimit(1)
+
+            Text(space.isCurrent ? "Şu anki masaüstü" : (space.isFullscreenApp ? "Tam Ekran Uygulama" : "Geçiş için tıkla"))
+                .font(.system(size: 9.5, weight: .regular))
+                .foregroundColor(.white.opacity(space.isCurrent ? 0.72 : 0.45))
+                .lineLimit(1)
+        }
+    }
+
+    @ViewBuilder
+    private func cardStatus(for space: DesktopSpace, isHovered: Bool) -> some View {
+        if !space.isCurrent {
+            Image(systemName: isHovered ? "arrow.right.circle.fill" : "chevron.right")
+                .font(.system(size: isHovered ? 14 : 11, weight: .semibold))
+                .foregroundColor(isHovered ? .white : .white.opacity(0.35))
+                .offset(x: isHovered ? 2 : 0)
+        }
+    }
+
+    @ViewBuilder
+    private func cardBackground(isCurrent: Bool, isHovered: Bool) -> some View {
+        let fillColor: Color = isCurrent
+            ? Color.blue.opacity(0.20)
+            : (isHovered ? Color.white.opacity(0.14) : Color.white.opacity(0.07))
+
+        let strokeColor: Color = isCurrent
+            ? Color.blue.opacity(0.55)
+            : Color.white.opacity(isHovered ? 0.24 : 0.10)
+
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(fillColor)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(strokeColor, lineWidth: 0.6)
+            )
+    }
+
+    private func handleSelectSpace(_ space: DesktopSpace) {
+        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+
+        // Already on this space — just dismiss cleanly
+        if space.isCurrent {
+            viewModel.collapseToIdleOrCompact()
+            return
+        }
+
+        let targetSpace = space
+        let spacesList = activeSpaces
+
+        // Step 1: Dismiss the notch panel immediately so DynamicNotch releases keyboard/mouse
+        // focus back to the system before the space transition runs.
+        viewModel.collapseToIdleOrCompact()
+
+        // Step 2: Perform the safe native space transition after the notch window closes
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+            SkyLightSpaceBridge.shared.switchToSpaceSafely(
+                targetSpace: targetSpace,
+                allSpaces: spacesList
+            )
+        }
+    }
+}
+
+// MARK: - Quick Action Menu View (Symmetrical Square Dial with iOS Jiggle Customization & macOS Dock Magnification Wave)
 
 struct SquareActionMenuView: View {
 
     @ObservedObject var viewModel: NotchViewModel
-    @State private var selectedPage: Int = 0
+    @ObservedObject private var actionManager = QuickActionManager.shared
+    @State private var hoverPoint: CGPoint? = nil
 
     private var metrics: QuickActionMenuMetrics {
         QuickActionMenuGeometryEngine.calculate(screen: ScreenHelper.targetScreen)
     }
 
     var body: some View {
-        VStack(spacing: 10) {
-            // Horizontal Carousel Container
-            HStack(spacing: 0) {
-                pageOne
-                    .frame(width: metrics.pageContentWidth)
-
-                pageTwo
-                    .frame(width: metrics.pageContentWidth)
-            }
-            .frame(width: metrics.pageContentWidth, alignment: .leading)
-            .offset(x: selectedPage == 0 ? 0 : -metrics.pageContentWidth)
-            .clipped()
-            .animation(.spring(response: 0.32, dampingFraction: 0.84), value: selectedPage)
-            .contentShape(Rectangle())
-            .gesture(
-                DragGesture(minimumDistance: 12)
-                    .onEnded { gesture in
-                        if gesture.translation.width < -25 && selectedPage == 0 {
-                            withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
-                                selectedPage = 1
-                            }
-                            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
-                        } else if gesture.translation.width > 25 && selectedPage == 1 {
-                            withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
-                                selectedPage = 0
-                            }
-                            NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
-                        } else if gesture.translation.width > 45 && selectedPage == 0 {
-                            viewModel.restoreFromSquareMenu()
+        ZStack {
+            if viewModel.isShowingSpacesSubpanel {
+                DesktopSpacesSwitcherView(
+                    viewModel: viewModel,
+                    boxSize: metrics.boxSize,
+                    onBack: {
+                        withAnimation(.spring(response: 0.42, dampingFraction: 0.66)) {
+                            viewModel.isShowingSpacesSubpanel = false
                         }
                     }
+                )
+                .transition(
+                    .asymmetric(
+                        insertion: .opacity.combined(with: .scale(scale: 0.94)),
+                        removal: .opacity.combined(with: .scale(scale: 0.94))
+                    )
+                )
+            } else {
+                radialDialContent
+                    .opacity(actionManager.selectedSlotForPicker == nil ? 1.0 : 0.0)
+                    .scaleEffect(actionManager.selectedSlotForPicker == nil ? 1.0 : 0.94)
+                    .animation(.spring(response: 0.35, dampingFraction: 0.78), value: actionManager.selectedSlotForPicker)
+                    .transition(
+                        .asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.94)),
+                            removal: .opacity.combined(with: .scale(scale: 0.94))
+                        )
+                    )
+            }
+
+            // MARK: - iOS Control Center Action Picker Modal Sheet
+            if let slotIndex = actionManager.selectedSlotForPicker {
+                ActionPickerSheetView(
+                    actionManager: actionManager,
+                    slotIndex: slotIndex
+                )
+                .transition(
+                    .asymmetric(
+                        insertion: .scale(scale: 0.92).combined(with: .opacity),
+                        removal: .scale(scale: 0.92).combined(with: .opacity)
+                    )
+                )
+                .zIndex(300)
+            }
+        }
+        .frame(width: metrics.boxSize, height: metrics.boxSize)
+        .clipped()
+        .onDisappear {
+            // Dismiss edit mode if menu closes
+            if actionManager.isEditMode {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    actionManager.isEditMode = false
+                    actionManager.selectedSlotForPicker = nil
+                }
+            }
+        }
+    }
+
+    private var radialDialContent: some View {
+        ZStack {
+            // MARK: - Center Button (Slot 8 - Configurable, defaults to Spaces)
+            let centerAction = actionManager.centerSlot
+            CircularActionItemView(
+                title: centerAction.title,
+                helpText: centerAction.helpText,
+                size: metrics.buttonSize,
+                magnificationScale: 1.0,
+                isEditMode: actionManager.isEditMode,
+                slotIndex: 8,
+                onLongPress: {
+                    withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                        actionManager.isEditMode = true
+                    }
+                },
+                onEditTap: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                        actionManager.selectedSlotForPicker = 8
+                    }
+                },
+                onResetToDefaults: {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                        actionManager.resetToDefaults()
+                    }
+                }
+            ) {
+                quickActionSymbolView(for: centerAction)
+            } action: {
+                if centerAction == .spaces {
+                    withAnimation(.spring(response: 0.42, dampingFraction: 0.66)) {
+                        viewModel.isShowingSpacesSubpanel = true
+                    }
+                } else {
+                    actionManager.execute(action: centerAction, viewModel: viewModel)
+                }
+            }
+
+            // MARK: - Radial Dial (8 Buttons, 45° step clockwise from 0° / 12:00)
+            ForEach(0..<8, id: \.self) { index in
+                let angle = Double(index * 45)
+                let action = (index < actionManager.radialSlots.count) ? actionManager.radialSlots[index] : QuickActionManager.defaultRadialSlots[index]
+                dialButton(
+                    index: index,
+                    angleDegrees: angle,
+                    actionType: action
+                )
+            }
+
+            // MARK: - Top Edit Mode Controls (Reset & Done buttons in top corners)
+            if actionManager.isEditMode && actionManager.selectedSlotForPicker == nil {
+                VStack {
+                    HStack {
+                        // Top-Left: Reset to defaults
+                        Button {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                actionManager.resetToDefaults()
+                            }
+                        } label: {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.white.opacity(0.85))
+                                .frame(width: 28, height: 28)
+                                .background(
+                                    Circle()
+                                        .fill(Color(white: 0.20).opacity(0.92))
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.white.opacity(0.28), lineWidth: 0.6)
+                                        )
+                                )
+                                .shadow(color: Color.black.opacity(0.3), radius: 3, y: 1)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Varsayılan Araçlara Sıfırla")
+
+                        Spacer()
+
+                        // Top-Right: Done Pill Button
+                        Button {
+                            NSHapticFeedbackManager.defaultPerformer.perform(.levelChange, performanceTime: .default)
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                actionManager.isEditMode = false
+                                actionManager.selectedSlotForPicker = nil
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 10, weight: .bold))
+                                Text("Bitti")
+                                    .font(.system(size: 11.5, weight: .semibold, design: .rounded))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 11)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule(style: .continuous)
+                                    .fill(Color(white: 0.20).opacity(0.92))
+                                    .overlay(
+                                        Capsule(style: .continuous)
+                                            .stroke(Color.white.opacity(0.35), lineWidth: 0.75)
+                                    )
+                            )
+                            .shadow(color: Color.black.opacity(0.35), radius: 4, y: 1)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Düzenleme Modundan Çık")
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 14)
+
+                    Spacer()
+                }
+                .transition(.asymmetric(
+                    insertion: .scale(scale: 0.85).combined(with: .opacity),
+                    removal: .scale(scale: 0.85).combined(with: .opacity)
+                ))
+                .zIndex(200)
+            }
+        }
+        .frame(width: metrics.boxSize, height: metrics.boxSize)
+        .contentShape(Rectangle())
+        .onContinuousHover { phase in
+            guard !actionManager.isEditMode else { return }
+            switch phase {
+            case .active(let loc):
+                hoverPoint = loc
+            case .ended:
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.78)) {
+                    hoverPoint = nil
+                }
+            }
+        }
+        .animation(.interactiveSpring(response: 0.18, dampingFraction: 0.82), value: hoverPoint)
+    }
+
+    private func magnificationScale(forAngle angleDeg: Double) -> CGFloat {
+        guard let hoverPoint = hoverPoint else { return 1.0 }
+
+        let boxCenter = CGPoint(x: metrics.boxSize / 2.0, y: metrics.boxSize / 2.0)
+        let dxCenter = hoverPoint.x - boxCenter.x
+        let dyCenter = hoverPoint.y - boxCenter.y
+        let distFromCenter = hypot(dxCenter, dyCenter)
+
+        // Exclude the middle button: if cursor is hovering over the center button (< 24pt), outer buttons rest at 1.0x.
+        // Between 24pt and 42pt, smoothly blend the magnification in.
+        let centerDeadzone: CGFloat = 24.0
+        let centerRampDistance: CGFloat = 18.0
+        guard distFromCenter > centerDeadzone else { return 1.0 }
+        let centerFade = min(max((distFromCenter - centerDeadzone) / centerRampDistance, 0.0), 1.0)
+
+        // Cursor angle in radians measured clockwise from top (12:00)
+        var cursorAngleRad = atan2(dxCenter, -dyCenter)
+        if cursorAngleRad < 0 {
+            cursorAngleRad += (2.0 * .pi)
+        }
+        let cursorAngleDeg = cursorAngleRad * 180.0 / .pi
+
+        // Shortest angular difference to this button's position [0, 180]
+        let rawDiff = abs(cursorAngleDeg - angleDeg)
+        let angularDiff = min(rawDiff, 360.0 - rawDiff)
+
+        // Continuous macOS Dock wave: covers active button and softly elevates adjacent neighbors (68° span)
+        let angularInfluenceSpan: Double = 68.0
+        guard angularDiff < angularInfluenceSpan else { return 1.0 }
+
+        let normalizedAngular = angularDiff / angularInfluenceSpan
+        let angularFalloff = CGFloat(0.5 * (1.0 + cos(.pi * normalizedAngular)))
+
+        // Radial corridor: allows the wave to be fluidly triggered anywhere around the buttons
+        // (inside the ring, on the buttons, and throughout the outer perimeter of the card)
+        let radialDistance = abs(distFromCenter - metrics.circleRadius)
+        let radialInfluenceBand: CGFloat = 72.0
+        let radialFactor = max(0.25, 1.0 - pow(min(radialDistance / radialInfluenceBand, 1.0), 1.8))
+
+        let maxScaleBoost: CGFloat = 0.34 // 1.0 -> 1.34x peak scale
+        let scaleBoost = maxScaleBoost * angularFalloff * radialFactor * centerFade
+
+        return 1.0 + scaleBoost
+    }
+
+    @ViewBuilder
+    private func dialButton(
+        index: Int,
+        angleDegrees: Double,
+        actionType: QuickActionType
+    ) -> some View {
+        let radians = angleDegrees * .pi / 180.0
+        let xOffset = metrics.circleRadius * CGFloat(sin(radians))
+        let yOffset = -metrics.circleRadius * CGFloat(cos(radians))
+        let scale = actionManager.isEditMode ? 1.0 : magnificationScale(forAngle: angleDegrees)
+
+        CircularActionItemView(
+            title: actionType.title,
+            helpText: actionType.helpText,
+            size: metrics.buttonSize,
+            magnificationScale: scale,
+            isEditMode: actionManager.isEditMode,
+            slotIndex: index,
+            onLongPress: {
+                withAnimation(.spring(response: 0.38, dampingFraction: 0.72)) {
+                    actionManager.isEditMode = true
+                }
+            },
+            onEditTap: {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.78)) {
+                    actionManager.selectedSlotForPicker = index
+                }
+            },
+            onResetToDefaults: {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                    actionManager.resetToDefaults()
+                }
+            }
+        ) {
+            quickActionSymbolView(for: actionType)
+        } action: {
+            actionManager.execute(action: actionType, viewModel: viewModel)
+        }
+        .offset(x: xOffset, y: yOffset)
+        .zIndex(scale)
+    }
+}
+
+// MARK: - Action Picker Sheet View (Control Center Tool Catalog Modal)
+
+struct ActionPickerSheetView: View {
+
+    @ObservedObject var actionManager: QuickActionManager
+    let slotIndex: Int
+
+    private var currentAssignedAction: QuickActionType {
+        if slotIndex == 8 {
+            return actionManager.centerSlot
+        }
+        if slotIndex >= 0 && slotIndex < actionManager.radialSlots.count {
+            return actionManager.radialSlots[slotIndex]
+        }
+        return .spaces
+    }
+
+    private let columns = [
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8),
+        GridItem(.flexible(), spacing: 8)
+    ]
+
+    var body: some View {
+        ZStack {
+            // Dark Frosted Glass backdrop
+            RoundedRectangle(cornerRadius: 38, style: .continuous)
+                .fill(Color(white: 0.10).opacity(0.97))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 38, style: .continuous)
+                        .stroke(Color.white.opacity(0.18), lineWidth: 0.6)
+                )
+                .shadow(color: Color.black.opacity(0.45), radius: 14, y: 4)
+
+            VStack(spacing: 6) {
+                // Header Bar
+                HStack(spacing: 8) {
+                    Button {
+                        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                        withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                            actionManager.selectedSlotForPicker = nil
+                        }
+                    } label: {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(.white.opacity(0.90))
+                            .frame(width: 26, height: 26)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.12))
+                                    .overlay(Circle().stroke(Color.white.opacity(0.20), lineWidth: 0.5))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .help("Geri")
+
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Araç Seçin")
+                            .font(.system(size: 13, weight: .semibold, design: .rounded))
+                            .foregroundColor(.white)
+
+                        Text(slotIndex == 8 ? "Merkez Düğme Eylemi" : "Slot \(slotIndex + 1) Eylemi")
+                            .font(.system(size: 9.5, weight: .regular))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+
+                    Spacer()
+
+                    // Close Button
+                    Button {
+                        NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                        withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                            actionManager.selectedSlotForPicker = nil
+                        }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.80))
+                            .frame(width: 24, height: 24)
+                            .background(
+                                Circle()
+                                    .fill(Color.white.opacity(0.12))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .help("Kapat")
+                }
+                .padding(.horizontal, 14)
+                .padding(.top, 12)
+
+                // Scrollable Grid of All 14 Actions
+                ScrollView(.vertical, showsIndicators: false) {
+                    LazyVGrid(columns: columns, spacing: 10) {
+                        ForEach(QuickActionType.allCases) { action in
+                            let isSelected = (action == currentAssignedAction)
+                            ActionPickerCell(
+                                action: action,
+                                isSelected: isSelected
+                            ) {
+                                actionManager.setSlot(index: slotIndex, action: action)
+                                NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                                withAnimation(.spring(response: 0.32, dampingFraction: 0.78)) {
+                                    actionManager.selectedSlotForPicker = nil
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                }
+            }
+        }
+        .frame(width: 260, height: 260)
+        .clipped()
+    }
+}
+
+// MARK: - Action Picker Cell
+
+struct ActionPickerCell: View {
+    let action: QuickActionType
+    let isSelected: Bool
+    let onSelect: () -> Void
+
+    @State private var isHovered: Bool = false
+    @State private var isPressed: Bool = false
+
+    var body: some View {
+        Button {
+            onSelect()
+        } label: {
+            VStack(spacing: 5) {
+                ZStack(alignment: .topTrailing) {
+                    quickActionSymbolView(for: action)
+                        .scaleEffect(34.0 / 46.0)
+                        .frame(width: 34, height: 34)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                .stroke(isSelected ? Color.blue : (isHovered ? Color.white.opacity(0.35) : Color.clear), lineWidth: isSelected ? 2 : 1)
+                        )
+
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.blue)
+                            .background(Circle().fill(Color.white).frame(width: 9, height: 9))
+                            .offset(x: 4, y: -4)
+                    }
+                }
+
+                Text(action.title)
+                    .font(.system(size: 9.5, weight: isSelected ? .bold : .medium, design: .rounded))
+                    .foregroundColor(isSelected ? .white : .white.opacity(isHovered ? 1.0 : 0.82))
+                    .lineLimit(1)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(isHovered ? Color.white.opacity(0.10) : Color.clear)
             )
-
-            // Apple Capsule Pagination Dots (● ○)
-            HStack(spacing: 6) {
-                Button {
-                    withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
-                        selectedPage = 0
+            .scaleEffect(isPressed ? 0.94 : (isHovered ? 1.04 : 1.0))
+        }
+        .buttonStyle(.plain)
+        .help(action.helpText)
+        .onHover { hovering in
+            withAnimation(.spring(response: 0.20, dampingFraction: 0.80)) {
+                isHovered = hovering
+            }
+        }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isPressed {
+                        withAnimation(.easeOut(duration: 0.08)) { isPressed = true }
                     }
-                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
-                } label: {
-                    Capsule(style: .continuous)
-                        .fill(selectedPage == 0 ? Color.white : Color.white.opacity(0.28))
-                        .frame(width: selectedPage == 0 ? 14 : 5, height: 5.0)
                 }
-                .buttonStyle(.plain)
-
-                Button {
-                    withAnimation(.spring(response: 0.30, dampingFraction: 0.82)) {
-                        selectedPage = 1
-                    }
-                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
-                } label: {
-                    Capsule(style: .continuous)
-                        .fill(selectedPage == 1 ? Color.white : Color.white.opacity(0.28))
-                        .frame(width: selectedPage == 1 ? 14 : 5, height: 5.0)
+                .onEnded { _ in
+                    withAnimation(.spring(response: 0.26, dampingFraction: 0.76)) { isPressed = false }
                 }
-                .buttonStyle(.plain)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-    }
-
-    // MARK: - Sayfa 1: Günlük Üretkenlik Araçları
-    private var pageOne: some View {
-        HStack(spacing: metrics.itemSpacing) {
-            // 1. Notlar (Apple Notes)
-            SquareActionItemView(
-                title: "Hızlı Not",
-                helpText: "Hızlı Not Ekle (⌥⇧N)",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleNotesSymbolView()
-            } action: {
-                viewModel.toggleQuickNote()
-            }
-
-            // 2. Anımsatıcı (Apple Reminders)
-            SquareActionItemView(
-                title: "Anımsatıcı",
-                helpText: "Hızlı Anımsatıcı Ekle (⌥⇧R)",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleRemindersSymbolView()
-            } action: {
-                viewModel.toggleQuickReminder()
-            }
-
-            // 3. Pano Geçmişi (Apple Clipboard)
-            SquareActionItemView(
-                title: "Pano",
-                helpText: "Pano Geçmişi (⌥⇧V)",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleClipboardSymbolView()
-            } action: {
-                viewModel.toggleClipboardManager()
-            }
-
-            // 4. Zamanlayıcı (Apple Timer / Pomodoro)
-            SquareActionItemView(
-                title: "Zamanlayıcı",
-                helpText: "Zamanlayıcı Kur (⌥⇧T)",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleTimerSymbolView()
-            } action: {
-                viewModel.toggleTimerManager()
-            }
-
-            // 5. Ses Çıkışı (Apple Sound Route)
-            SquareActionItemView(
-                title: "Ses Çıkışı",
-                helpText: "Ses Giriş ve Çıkışları",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleSoundSymbolView()
-            } action: {
-                viewModel.openAudioRoutePicker()
-            }
-        }
-    }
-
-    // MARK: - Sayfa 2: Sistem, Medya & Donanım Araçları
-    private var pageTwo: some View {
-        HStack(spacing: metrics.itemSpacing) {
-            // 1. Ekran Alıntısı & OCR (Faz 3)
-            SquareActionItemView(
-                title: "Alıntı & OCR",
-                helpText: "Ekran Alıntısı & Metin Tanıma",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleScreenshotSymbolView()
-            } action: {
-                viewModel.triggerQuickScreenshotOCR()
-            }
-
-            // 2. Kamera Aynası (Faz 4)
-            SquareActionItemView(
-                title: "Ayna",
-                helpText: "Hızlı Kamera Kontrolü",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleMirrorSymbolView()
-            } action: {
-                viewModel.toggleCameraMirror()
-            }
-
-            // 3. Odaklanma Modu (Faz 5)
-            SquareActionItemView(
-                title: "Odak Modu",
-                helpText: "Rahatsız Etmeyin",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleFocusSymbolView()
-            } action: {
-                viewModel.toggleFocusMode()
-            }
-
-            // 4. Harici Diskleri Çıkar (Faz 6)
-            SquareActionItemView(
-                title: "Disk Çıkar",
-                helpText: "Bağlı Diskleri Güvenle Çıkar",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleEjectSymbolView()
-            } action: {
-                viewModel.toggleExternalDriveManager()
-            }
-
-            // 5. Takvim & Toplantı (Faz 7)
-            SquareActionItemView(
-                title: "Takvim",
-                helpText: "Yaklaşan Etkinlikler",
-                itemWidth: metrics.itemWidth
-            ) {
-                AppleCalendarSymbolView()
-            } action: {
-                viewModel.toggleCalendarManager()
-            }
-        }
+        )
     }
 }
 
@@ -1126,7 +2235,11 @@ final class CameraCaptureManager: NSObject, ObservableObject {
     private func configureSession() {
         guard !isConfigured else { return }
         session.beginConfiguration()
-        session.sessionPreset = .medium
+        if session.canSetSessionPreset(.high) {
+            session.sessionPreset = .high
+        } else {
+            session.sessionPreset = .medium
+        }
 
         let discoverySession = AVCaptureDevice.DiscoverySession(
             deviceTypes: [.builtInWideAngleCamera],
@@ -1219,51 +2332,78 @@ struct CameraMirrorView: View {
 
     @State private var pulseGreen = false
 
-    var body: some View {
-        VStack(spacing: 8) {
-            // Header bar
-            HStack(alignment: .center) {
-                HStack(spacing: 6) {
-                    Circle()
-                        .fill(Color(red: 0.20, green: 0.78, blue: 0.35))
-                        .frame(width: 7, height: 7)
-                        .scaleEffect(pulseGreen ? 1.25 : 0.85)
-                        .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulseGreen)
+    private let contentWidth: CGFloat = 400.0
+    private let videoHeight: CGFloat = 250.0
+    private let cornerRadius: CGFloat = 16.0
 
-                    Text("Kamera Aynası")
-                        .font(.system(size: 12.5, weight: .semibold))
-                        .foregroundColor(.white)
+    var body: some View {
+        VStack(spacing: 10) {
+            // Header bar (Apple Standard Modal Header - Perfectly aligned flush with video edges)
+            HStack(alignment: .center) {
+                // Left: Camera Icon Squircle + Title & Status
+                HStack(spacing: 8) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 7, style: .continuous)
+                            .fill(Color.white.opacity(0.12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .stroke(Color.white.opacity(0.20), lineWidth: 0.5)
+                            )
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    .frame(width: 24, height: 24)
+
+                    VStack(alignment: .leading, spacing: 1) {
+                        HStack(spacing: 5) {
+                            Text("Kamera Aynası")
+                                .font(.system(size: 12.5, weight: .semibold, design: .rounded))
+                                .foregroundColor(.white)
+
+                            Circle()
+                                .fill(Color(red: 0.20, green: 0.78, blue: 0.35))
+                                .frame(width: 6, height: 6)
+                                .scaleEffect(pulseGreen ? 1.25 : 0.85)
+                                .animation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true), value: pulseGreen)
+                        }
+
+                        Text(cameraManager.permissionDenied ? "İzin Gerekli" : (cameraManager.isRunning ? "Canlı Önizleme" : "Kamera Başlatılıyor..."))
+                            .font(.system(size: 9.5, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.50))
+                    }
                 }
 
                 Spacer()
 
-                Button {
-                    NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
+                // Right: Apple Modal Close Button (Aligned flush with right edge of video preview)
+                NotchCloseButton {
                     cameraManager.stopSession()
                     onDismiss()
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.white.opacity(0.60))
                 }
-                .buttonStyle(.plain)
             }
-            .padding(.horizontal, 4)
+            .frame(width: contentWidth, height: 28)
 
-            // Video Preview Frame
+            // Video Preview Frame (Concentric High-Def Mirror)
             ZStack {
-                RoundedRectangle(cornerRadius: 13, style: .continuous)
-                    .fill(Color.black.opacity(0.60))
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(Color.black.opacity(0.70))
 
                 if cameraManager.permissionDenied {
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         Image(systemName: "video.slash.fill")
-                            .font(.system(size: 24, weight: .medium))
+                            .font(.system(size: 28, weight: .medium))
                             .foregroundColor(.white.opacity(0.50))
 
                         Text("Kamera İzni Gerekli")
-                            .font(.system(size: 11.5, weight: .semibold))
+                            .font(.system(size: 12.5, weight: .semibold, design: .rounded))
                             .foregroundColor(.white)
+
+                        Text("Kamera aynasını kullanabilmek için Sistem Ayarları'ndan izin verin.")
+                            .font(.system(size: 10, weight: .regular))
+                            .foregroundColor(.white.opacity(0.65))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 24)
 
                         Button {
                             if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Camera") {
@@ -1271,37 +2411,38 @@ struct CameraMirrorView: View {
                             }
                         } label: {
                             Text("Ayarları Aç")
-                                .font(.system(size: 10, weight: .medium))
+                                .font(.system(size: 10.5, weight: .semibold, design: .rounded))
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(Capsule().fill(Color.white.opacity(0.18)))
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 5)
+                                .background(Capsule().fill(Color.white.opacity(0.20)))
+                                .overlay(Capsule().stroke(Color.white.opacity(0.30), lineWidth: 0.5))
                         }
                         .buttonStyle(.plain)
                     }
-                    .padding(8)
+                    .padding(16)
                 } else if cameraManager.isRunning {
                     CameraPreviewLayerView(session: cameraManager.session)
-                        .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                        .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                 } else {
-                    VStack(spacing: 6) {
+                    VStack(spacing: 8) {
                         ProgressView()
-                            .scaleEffect(0.7)
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white.opacity(0.8)))
+                            .scaleEffect(0.85)
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white.opacity(0.85)))
 
                         Text("Kamera Başlatılıyor...")
-                            .font(.system(size: 10.5, weight: .medium))
-                            .foregroundColor(.white.opacity(0.60))
+                            .font(.system(size: 11, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.65))
                     }
                 }
             }
-            .frame(width: 250, height: 140)
+            .frame(width: contentWidth, height: videoHeight)
             .overlay(
-                RoundedRectangle(cornerRadius: 13, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .stroke(Color.white.opacity(0.18), lineWidth: 0.5)
             )
         }
-        .frame(width: 260)
+        .frame(width: contentWidth)
         .onAppear {
             pulseGreen = true
             cameraManager.checkPermissionAndStart()
