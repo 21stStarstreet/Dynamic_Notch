@@ -188,11 +188,11 @@ final class NotchViewModel: ObservableObject {
 
     /// True when the Left Satellite Orb should be visible flanking the left side of the notch
     var hasLeftSatelliteOrb: Bool {
-        leftSatelliteContent != nil && hasActiveContent && !isScreenLocked && !isNotchTemporarilyHidden
+        leftSatelliteContent != nil && hasActiveContent && !isScreenLocked && !isNotchTemporarilyHidden && !isMissionControlSuspended
     }
 
     func showLeftSatellite(content: NotchState.ContentType, duration: TimeInterval = 2.2) {
-        guard !isScreenLocked, !isNotchTemporarilyHidden else { return }
+        guard !isScreenLocked, !isNotchTemporarilyHidden, !isMissionControlSuspended else { return }
         leftSatelliteDismissTimer?.cancel()
         withAnimation(.spring(response: 0.38, dampingFraction: 0.74)) {
             leftSatelliteAlert = content
@@ -213,7 +213,7 @@ final class NotchViewModel: ObservableObject {
     }
 
     func showRightSatellite(content: NotchState.ContentType, duration: TimeInterval = 2.2) {
-        guard !isScreenLocked, !isNotchTemporarilyHidden else { return }
+        guard !isScreenLocked, !isNotchTemporarilyHidden, !isMissionControlSuspended else { return }
         rightSatelliteDismissTimer?.cancel()
         withAnimation(.spring(response: 0.38, dampingFraction: 0.74)) {
             rightSatelliteAlert = content
@@ -392,7 +392,7 @@ final class NotchViewModel: ObservableObject {
 
     /// True when the Satellite Orb should be visible beside the main notch
     var hasSecondaryLiveActivity: Bool {
-        secondaryLiveActivity != nil && hasActiveContent && !isScreenLocked && !isNotchTemporarilyHidden
+        secondaryLiveActivity != nil && hasActiveContent && !isScreenLocked && !isNotchTemporarilyHidden && !isMissionControlSuspended
     }
 
     /// Swaps primary and secondary concurrent LiveActivities with a fluid Apple spring animation
@@ -561,7 +561,7 @@ final class NotchViewModel: ObservableObject {
     // MARK: - Mouse Hover Handling (Active ONLY when a LiveActivity or Alert is present)
 
     func setHovered(_ hovering: Bool) {
-        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
+        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden && !isMissionControlSuspended else { return }
 
         hoverExitTimer?.cancel()
         hoverExitTimer = nil
@@ -732,7 +732,7 @@ final class NotchViewModel: ObservableObject {
         NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.activeSpaceDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                guard let self, self.isExpanded else { return }
+                guard let self, !self.isMissionControlSuspended, self.isExpanded else { return }
                 self.collapseToIdleOrCompact()
             }
             .store(in: &cancellables)
@@ -1024,6 +1024,16 @@ final class NotchViewModel: ObservableObject {
     }
 
     private func handleAlertIncoming(_ alert: NotchState.ContentType) {
+        if isMissionControlSuspended {
+            let entry = DeferredAlert(alert: alert, expiry: Date().addingTimeInterval(deferredAlertLifetime))
+            if let idx = deferredAlerts.firstIndex(where: { $0.alert.kindIdentifier == alert.kindIdentifier }) {
+                deferredAlerts[idx] = entry
+            } else {
+                deferredAlerts.append(entry)
+            }
+            return
+        }
+
         // Case 0: ONBOARDING OR WELCOME GREETING ACTIVE
         // When the Onboarding flow or Welcome Greeting is occupying the main notch:
         // Do not interrupt the presentation. Route the incoming alert
@@ -1034,20 +1044,11 @@ final class NotchViewModel: ObservableObject {
             return
         }
 
-        // Case 0b: QUICK ACTION MENU / DESKTOP SPACES SWITCHER / CAMERA MIRROR ACTIVE
-        // When the user is actively interacting with the Quick Action Menu, Desktop Spaces Switcher, or Camera Mirror,
-        // passive HUD indicators (volume, brightness, keyboard brightness) should route to a Satellite Orb
-        // instead of kicking the user out of the menu/mirror.
-        if isExpanded && (displayedContent == .emptySquareMenu || displayedContent == .cameraMirror) && isHUDIndicator(alert) {
-            let duration = alert.defaultDuration ?? 2.2
-            routeSatelliteAlert(content: alert, duration: duration)
-            return
-        }
-
-        // Case 0c: USER IS ENGAGED WITH AN ACTION CARD
-        // While the user works inside an interactive action (Clipboard, Shelf, Notes, Timer Setup...),
-        // system-initiated transient alerts must NOT replace it. They wait on the side (satellite orb)
-        // and, once the user is done and the alert is still valid, glide into the main island.
+        // Case 0b: USER IS ENGAGED WITH AN ACTION
+        // While the user works inside or views an active action (Music, Timer, Notes,
+        // Clipboard, Shelf, Quick Actions Menu, Camera Mirror, Calendar, etc.),
+        // system-initiated transient alerts must NOT replace it or displace it into an orb!
+        // They wait on the side (Satellite Orb) and, once the user is done, glide into the main island.
         if shouldDeferAlertWhileEngaged(alert) {
             deferAlertWhileEngaged(alert)
             return
@@ -1158,7 +1159,7 @@ final class NotchViewModel: ObservableObject {
             break
         }
 
-        guard currentAlert == nil, !isShowingOnboardingOrGreeting, !isNotchTemporarilyHidden, let active = activeLiveActivity else { return }
+        guard currentAlert == nil, !isShowingOnboardingOrGreeting, !isNotchTemporarilyHidden, !isMissionControlSuspended, let active = activeLiveActivity else { return }
         guard !isScreenLocked else { return }
 
         // Never interrupt the Quick Action Menu, Desktop Spaces Switcher, or Camera Mirror while expanded
@@ -1260,7 +1261,7 @@ final class NotchViewModel: ObservableObject {
             }
         }
 
-        guard currentAlert == nil, !isShowingOnboardingOrGreeting else { return }
+        guard currentAlert == nil, !isShowingOnboardingOrGreeting, !isMissionControlSuspended else { return }
         guard !isScreenLocked else { return }
 
         // Never interrupt the Quick Action Menu, Desktop Spaces Switcher, or Camera Mirror while expanded
@@ -1310,7 +1311,7 @@ final class NotchViewModel: ObservableObject {
     // MARK: - Alert Presentation & Queue
 
     private func enqueueAlert(_ alert: NotchState.ContentType) {
-        guard !isNotchTemporarilyHidden else { return }
+        guard !isNotchTemporarilyHidden, !isMissionControlSuspended else { return }
         presentAlert(alert)
     }
 
@@ -2035,24 +2036,50 @@ final class NotchViewModel: ObservableObject {
     private var deferredAlerts: [DeferredAlert] = []
     private var deferredPromotionWorkItem: DispatchWorkItem?
 
-    /// How long a deferred alert stays relevant after it arrived.
-    private let deferredAlertLifetime: TimeInterval = 20.0
+    /// How long a deferred alert stays relevant after it arrived (seconds).
+    private let deferredAlertLifetime: TimeInterval = 6.0
 
-    /// `true` while the user is actively working inside an interactive action card.
+    /// `true` while the user is actively working inside or viewing any action card
+    /// (e.g. Now Playing music, Timer, Quick Actions, Clipboard, Shelf, Notes, Reminders,
+    /// Calendar, External Drive, Camera Mirror, etc.), or interacting with notch controls.
     var isEngagedWithAction: Bool {
-        guard isExpanded, !isScreenLocked, !isShowingOnboardingOrGreeting else { return false }
-        guard isInteractiveActionCardActive else { return false }
-        if displayedContent == .emptySquareMenu || displayedContent == .cameraMirror { return true }
-        return isHovered
-            || isInteractingWithControl
-            || isHoveringSlider
-            || windowController?.isPanelKeyWindow == true
+        guard !isScreenLocked, !isShowingOnboardingOrGreeting, !isMissionControlSuspended else { return false }
+
+        // Any expanded card on screen means the user is actively viewing or interacting with an action!
+        if isExpanded { return true }
+
+        // Active hover or control/slider interaction in compact mode
+        if isHovered || isInteractingWithControl || isHoveringSlider { return true }
+        if windowController?.isPanelKeyWindow == true { return true }
+
+        return false
     }
 
-    /// Only system-initiated alerts wait. Results of the user's own action (saved note, ejected disk,
-    /// focus toggle, screenshot...) and interactive cards present immediately as before.
+    /// Only system-initiated transient alerts wait on the side.
+    /// Results of the user's explicit action (saved note, ejected disk, focus toggle, screenshot...)
+    /// and interactive action cards present immediately as before.
     private func shouldDeferAlertWhileEngaged(_ alert: NotchState.ContentType) -> Bool {
-        guard isEngagedWithAction, !alert.isInteractiveActionCard else { return false }
+        guard isEngagedWithAction else { return false }
+
+        // If the current card in the main notch is ALREADY the same kind of alert
+        // (e.g. user is actively viewing/adjusting Volume HUD and presses volume again),
+        // let it update in-place in the main notch!
+        let activeMainKind = (currentAlert ?? displayedContent)?.kindIdentifier
+        if activeMainKind == alert.kindIdentifier {
+            return false
+        }
+
+        // Mute / VolumeChange transitions while Volume HUD is already active
+        if (activeMainKind == "volumeChange" || activeMainKind == "muted") &&
+           (alert.kindIdentifier == "volumeChange" || alert.kindIdentifier == "muted") {
+            return false
+        }
+
+        // Never defer user-initiated action cards (notes, clipboard, shelf...)
+        if alert.isInteractiveActionCard { return false }
+
+        // Transient system & HUD alerts that must wait on the side (Satellite Orb)
+        // instead of kicking the user out of their active action:
         switch alert {
         case .batteryLow, .batteryCharging, .batteryFull,
              .bluetoothConnected, .bluetoothDisconnected,
@@ -2072,8 +2099,10 @@ final class NotchViewModel: ObservableObject {
         } else {
             deferredAlerts.append(entry)
         }
-        // Visible "waiting on the side" indicator that lives as long as the alert stays relevant.
-        routeSatelliteAlert(content: alert, duration: deferredAlertLifetime)
+        // Visible "waiting on the side" indicator in Satellite Orb for its natural display duration.
+        // It stays refreshed as long as repeated events arrive (e.g. continuous volume adjustments).
+        let orbDuration = alert.defaultDuration ?? 2.5
+        routeSatelliteAlert(content: alert, duration: orbDuration)
     }
 
     /// Re-checks shortly after any collapse/close whether deferred alerts can now come to the main island.
@@ -2084,7 +2113,7 @@ final class NotchViewModel: ObservableObject {
             self?.promoteDeferredAlertsIfPossible()
         }
         deferredPromotionWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: work)
     }
 
     private func promoteDeferredAlertsIfPossible() {
@@ -2092,10 +2121,10 @@ final class NotchViewModel: ObservableObject {
         let now = Date()
         deferredAlerts.removeAll { $0.expiry <= now }
         guard !deferredAlerts.isEmpty else { return }
-        guard !isScreenLocked, !isShowingOnboardingOrGreeting, !isNotchTemporarilyHidden else { return }
-        // Still busy (card open or being worked on, alert on screen, transition running): retry later.
+        guard !isScreenLocked, !isShowingOnboardingOrGreeting, !isNotchTemporarilyHidden, !isMissionControlSuspended else { return }
+
+        // Still busy (card expanded/engaged, alert currently on screen, transition running): retry later.
         guard !isEngagedWithAction,
-              !(isExpanded && isInteractiveActionCardActive),
               currentAlert == nil,
               pendingTransitionTarget == nil else {
             schedulePromotionOfDeferredAlerts()
@@ -2105,7 +2134,7 @@ final class NotchViewModel: ObservableObject {
         let ready = deferredAlerts
         deferredAlerts.removeAll()
 
-        // Remove the waiting orbs for these alerts; they move to the main island now.
+        // Remove the waiting orbs for these alerts; they glide into the main island now.
         for item in ready {
             if rightSatelliteAlert?.kindIdentifier == item.alert.kindIdentifier { dismissRightSatellite() }
             if leftSatelliteAlert?.kindIdentifier == item.alert.kindIdentifier { dismissLeftSatellite() }
@@ -2945,7 +2974,7 @@ final class NotchViewModel: ObservableObject {
 
     /// Opens the Quick Action radial dial menu when hovering over the idle notch.
     func openSquareMenuFromIdle() {
-        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
+        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden && !isMissionControlSuspended else { return }
         guard !isShowingOnboardingOrGreeting else { return }
         guard !isExpanded && activeLiveActivity == nil && currentAlert == nil else { return }
 
@@ -2993,7 +3022,7 @@ final class NotchViewModel: ObservableObject {
     }
 
     func switchToSquareMenu() {
-        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
+        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden && !isMissionControlSuspended else { return }
         guard isExpanded else { return }
         guard displayedContent != .emptySquareMenu else { return }
         guard !isInteractingWithControl && !isHoveringSlider else { return }
@@ -3378,6 +3407,68 @@ final class NotchViewModel: ObservableObject {
         }
     }
 
+    // MARK: - Mission Control Suspension (Closing Animation on Enter, Opening Animation on Exit)
+
+    @Published private(set) var isMissionControlSuspended: Bool = false
+
+    func onMissionControlEntered() {
+        guard !isMissionControlSuspended else { return }
+        isMissionControlSuspended = true
+
+        hoverExitTimer?.cancel()
+        hoverExitTimer = nil
+        dismissTimer?.cancel()
+        dismissTimer = nil
+        deferredPromotionWorkItem?.cancel()
+        deferredPromotionWorkItem = nil
+
+        isHovered = false
+        isHoveringSlider = false
+        isInteractingWithControl = false
+        contentBeforeSquareMenu = nil
+        isShowingSpacesSubpanel = false
+
+        // Animate closed into the physical cutout and completely deactivate while Mission Control is open.
+        hideCompletely()
+    }
+
+    func onMissionControlExited() {
+        guard isMissionControlSuspended else { return }
+        isMissionControlSuspended = false
+
+        cleanupWorkItem?.cancel()
+        cleanupWorkItem = nil
+        compactSwapWorkItem?.cancel()
+        compactSwapWorkItem = nil
+        pendingTransitionTarget = nil
+        pendingTransitionExpand = false
+
+        guard isNotchEnabled && !isScreenLocked && !isNotchTemporarilyHidden else { return }
+
+        // Ensure a clean starting state inside the physical cutout before playing the opening animation.
+        let screen = activeScreen
+        let hiddenSize = NotchPositionCalculator.hiddenFrame(for: screen).size
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        withTransaction(transaction) {
+            hasActiveContent = false
+            isExpanded = false
+            isCompactWingsSwappingOut = false
+            pillSize = hiddenSize
+        }
+
+        if let step = activeOnboardingStep {
+            presentOnboarding(step: step)
+        } else if let active = activeLiveActivity {
+            emergeCompactFromIdle(for: active)
+        } else {
+            // No active activity: stay completely hidden behind the physical cutout with zero phantom pill
+            hideCompletely()
+        }
+
+        schedulePromotionOfDeferredAlerts()
+    }
+
     // MARK: - Global Toggle Hide / Show (Option + Shift + H HotKey)
 
     @Published var isNotchTemporarilyHidden: Bool = false
@@ -3391,7 +3482,8 @@ final class NotchViewModel: ObservableObject {
             if let active = activeLiveActivity {
                 emergeCompactFromIdle(for: active)
             } else {
-                // If nothing was playing, briefly show idle compact wings
+                // When unhiding the notch with no active activity running:
+                // Briefly reveal the compact island as visual confirmation, then settle back into idle
                 let screen = activeScreen
                 let compactSize = NotchPositionCalculator.compactFrame(for: screen).size
                 isNotchVisible = true
@@ -3399,7 +3491,7 @@ final class NotchViewModel: ObservableObject {
                     hasActiveContent = true
                     pillSize = compactSize
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) { [weak self] in
                     guard let self, self.activeLiveActivity == nil, !self.isExpanded else { return }
                     self.hideCompletely()
                 }

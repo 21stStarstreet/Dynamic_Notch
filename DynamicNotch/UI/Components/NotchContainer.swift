@@ -725,6 +725,8 @@ struct CompactNotchWingsView: View {
         HStack(spacing: 0) {
             leftWingContent
                 .id(activityContent?.kindIdentifier ?? "empty-left")
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .transition(.scale(scale: 0.70).combined(with: .opacity))
                 .frame(width: isFloating ? 28 : wingWidth, height: barHeight, alignment: .center)
                 .padding(.leading, isFloating ? 10 : 0)
@@ -741,6 +743,8 @@ struct CompactNotchWingsView: View {
 
             rightWingContent
                 .id(activityContent?.kindIdentifier ?? "empty-right")
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .transition(.scale(scale: 0.70).combined(with: .opacity))
                 .frame(width: isFloating ? 28 : wingWidth, height: barHeight, alignment: .center)
                 .padding(.trailing, isFloating ? 10 : 0)
@@ -978,23 +982,30 @@ struct CompactNotchWingsView: View {
                 Text("%\(Int(round(item.progress * 100)))")
                     .font(.system(size: 10, weight: .bold, design: .rounded))
                     .foregroundColor(.notchBlue)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
                     .contentTransition(.numericText())
             } else {
                 Text(DownloadObserver.formatCompactBytes(item.downloadedBytes))
                     .font(.system(size: 9.5, weight: .bold, design: .rounded))
                     .foregroundColor(.notchBlue)
                     .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
         case .batteryCharging:
             Text("%\(viewModel.batteryObserver.percentage)")
                 .font(.system(size: 10.5, weight: .bold, design: .rounded))
                 .foregroundColor(.notchGreen)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .batteryFull:
             Text("%100")
                 .font(.system(size: 10, weight: .bold, design: .rounded))
                 .foregroundColor(.notchGreen)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .bluetoothConnected(let name):
             if let battery = viewModel.bluetoothObserver.batteryPercentage(for: name) {
@@ -1003,24 +1014,30 @@ struct CompactNotchWingsView: View {
                 Text("Bağlı")
                     .font(.system(size: 9.5, weight: .bold, design: .rounded))
                     .foregroundColor(.notchBlue)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
 
         case .bluetoothDisconnected:
             Text("Kesildi")
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.65))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .wifiConnected:
             Text(Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true ? "Bağlandı" : "Connected")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(.notchGreen)
                 .lineLimit(1)
+                .truncationMode(.tail)
 
         case .wifiDisconnected:
             Text(Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true ? "Kesildi" : "Disconnected")
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .foregroundColor(.notchRed)
                 .lineLimit(1)
+                .truncationMode(.tail)
 
         case .vpnConnected(_, let date):
             VPNUptimeView(connectedDate: date, isCompact: true)
@@ -1029,6 +1046,8 @@ struct CompactNotchWingsView: View {
             Text(isActive ? "Açık" : "Kapalı")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(isActive ? .notchIndigo : .white.opacity(0.65))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .muted(let isMuted):
             let vol = viewModel.volumeObserver.volume
@@ -1036,23 +1055,31 @@ struct CompactNotchWingsView: View {
             Text(isEffectiveMuted ? (Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true ? "Sessiz" : "Mute") : "%\(Int(round(vol * 100)))")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(isEffectiveMuted ? .notchRed : .white.opacity(0.90))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .volumeChange(let vol):
             let isEffectiveMuted = vol <= 0.005
             Text(isEffectiveMuted ? (Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true ? "Sessiz" : "Mute") : "%\(Int(round(vol * 100)))")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(isEffectiveMuted ? .notchRed : .white.opacity(0.90))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .brightnessChange(let b):
             Text("%\(Int(round(b * 100)))")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.90))
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .contentTransition(.numericText())
 
         case .keyboardBrightnessChange(let b):
             Text("%\(Int(round(b * 100)))")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.90))
+                .lineLimit(1)
+                .truncationMode(.tail)
                 .contentTransition(.numericText())
 
         case .screenRecording(let startDate):
@@ -1068,6 +1095,7 @@ struct CompactNotchWingsView: View {
                     .font(.system(size: 9.5, weight: .bold, design: .monospaced))
                     .foregroundColor(.notchRed)
                     .lineLimit(1)
+                    .truncationMode(.tail)
                     .offset(y: 2.0)
             }
 
@@ -1088,6 +1116,7 @@ struct CompactNotchWingsView: View {
                     .font(.system(size: 9.5, weight: .bold, design: .monospaced))
                     .foregroundColor(tintColor)
                     .lineLimit(1)
+                    .truncationMode(.tail)
                     .opacity(item.isPaused ? 0.60 : 1.0)
                     .offset(y: 2.0)
             }
@@ -1096,16 +1125,22 @@ struct CompactNotchWingsView: View {
             Text(Locale.current.language.languageCode?.identifier.hasPrefix("tr") == true ? "Çevrimdışı" : "Offline")
                 .font(.system(size: 9, weight: .bold, design: .rounded))
                 .foregroundColor(Color(red: 0.98, green: 0.58, blue: 0.12))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .clipboard(let items):
             Text("\(items.count)")
                 .font(.system(size: 9.5, weight: .bold, design: .monospaced))
                 .foregroundColor(Color(red: 0.35, green: 0.65, blue: 1.0))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .shelf:
             Text("\(ShelfManager.shared.items.count)")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(Color(red: 0.22, green: 0.62, blue: 1.0))
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .externalDrive(let drives):
             if let drive = drives.first {
@@ -1113,11 +1148,14 @@ struct CompactNotchWingsView: View {
                     Text("\(drives.count) Sürücü")
                         .font(.system(size: 9.5, weight: .bold, design: .rounded))
                         .foregroundColor(drive.driveType.accentColor)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
                 } else {
                     Text(drive.availableCapacityFormatted)
                         .font(.system(size: 9.5, weight: .bold, design: .rounded))
                         .foregroundColor(drive.driveType.accentColor)
                         .lineLimit(1)
+                        .truncationMode(.tail)
                 }
             }
 
@@ -1125,24 +1163,29 @@ struct CompactNotchWingsView: View {
             Text("Çıkarıldı")
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(.notchGreen)
+                .lineLimit(1)
+                .truncationMode(.tail)
 
         case .calendarEvent(let event):
             Text(event.compactCountdownString)
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(event.isHappeningNow ? .notchGreen : (event.conferencePlatform?.accentColor ?? event.calendarColor))
                 .lineLimit(1)
+                .truncationMode(.tail)
 
         case .calendarAlert(let event):
             Text(event.compactCountdownString)
                 .font(.system(size: 9.5, weight: .bold, design: .rounded))
                 .foregroundColor(event.conferencePlatform?.accentColor ?? event.calendarColor)
                 .lineLimit(1)
+                .truncationMode(.tail)
 
         case .hotspot(let hotspot), .hotspotLowBattery(let hotspot):
             Text(hotspot.percentageFormatted)
                 .font(.system(size: 12.0, weight: .bold, design: .rounded))
                 .foregroundColor(hotspot.batteryColor)
                 .lineLimit(1)
+                .truncationMode(.tail)
 
         default:
             EmptyView()

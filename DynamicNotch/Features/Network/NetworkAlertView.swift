@@ -127,6 +127,7 @@ struct VPNUptimeView: View {
                     .font(.system(size: 9.5, weight: .bold, design: .monospaced))
                     .foregroundColor(.notchIndigo)
                     .lineLimit(1)
+                    .truncationMode(.tail)
                     .contentTransition(.numericText())
             } else {
                 HStack(spacing: 5.5) {

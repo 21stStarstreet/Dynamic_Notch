@@ -183,23 +183,25 @@ struct NotchSizeCalculator {
 
         switch content {
 
-        // ── Now Playing (48×48 Album Art + 3-line Track Stack + Transport Controls) ──
-        // Height: 7pt top + 51pt content + 12pt bottom = 70pt below cutout.
-        // When Lyrics are expanded: 70pt base + 8pt spacing + 112pt lyrics drawer + 10pt bottom = 200pt below cutout.
-        case .nowPlaying(let info):
-            let titleW    = measureText(info.title,  font: titleFont) + 26
-            let artistW   = measureText(info.artist, font: subtitleFont)
-            let textBlock = min(max(titleW, artistW, 148), 215)
-            let baseRaw   = 48 + 12 + textBlock + 12 + 138
+        // ── Now Playing (Landscape 3:2 Ratio Expanded Card: 2-Column Art & Controls) ──
+        // Width: 354pt raw + 56pt hPadding = 410pt total width.
+        // Height below cutout: 114pt (Notched screen: 114 + 32 = 146pt, visibly wide horizontal landscape card).
+        // In Floating Capsule mode: 126pt (126 + 14 = 140pt).
+        // When Lyrics are expanded: normalBodyHeight + 140pt lyrics drawer.
+        // When Audio Route is expanded: normalBodyHeight + drawerHeight.
+        case .nowPlaying:
+            let isFloating = NotchPositionCalculator.isFloatingCapsule(for: screen)
+            let baseRaw: CGFloat = 354.0
+            let normalBodyHeight: CGFloat = isFloating ? 126.0 : 114.0
 
             if NowPlayingViewModel.shared.isLyricsExpanded {
-                return (baseRaw, 200)
+                return (baseRaw, normalBodyHeight + 140.0)
             } else if NowPlayingViewModel.shared.isAudioRouteExpanded {
                 let deviceCount = max(1, AudioDeviceManager.shared.outputDevices.count)
                 let drawerHeight = min(CGFloat(deviceCount) * 38.0 + 48.0, 190.0)
-                return (baseRaw, 70 + drawerHeight)
+                return (baseRaw, normalBodyHeight + drawerHeight)
             } else {
-                return (baseRaw, 70)
+                return (baseRaw, normalBodyHeight)
             }
 
         // ── Download (Phase 2 Faz 4: 34×34 Badge + 2-Row Name/Folder & Speed/Progress Stack) ──

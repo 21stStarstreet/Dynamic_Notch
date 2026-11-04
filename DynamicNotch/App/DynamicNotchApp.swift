@@ -28,6 +28,6 @@ enum DynamicNotchApp {
 
 enum AppConfig {
     static let appName = "DynamicNotch"
-    static let version = "1.8.17"
-    static let build = "1.8.17"
+    static let version = "1.8.25"
+    static let build = "1.8.25"
 }

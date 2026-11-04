@@ -139,6 +139,8 @@ final class SkyLightSpaceBridge {
     private typealias CGSSetWindowTagsType = @convention(c) (UInt32, UInt32, UnsafePointer<UInt32>, Int32) -> Int32
     private typealias CGSCopyManagedDisplaySpacesType = @convention(c) (UInt32) -> Unmanaged<CFArray>?
     private typealias CGSCopySpacesForWindowsType = @convention(c) (UInt32, Int32, CFArray) -> Unmanaged<CFArray>?
+    private typealias SLSCopySpacesType = @convention(c) (UInt32, Int32) -> Unmanaged<CFArray>?
+    private typealias SLSSpaceCopyNameType = @convention(c) (UInt32, UInt64) -> Unmanaged<CFString>?
 
     private var slsMainConnectionID: SLSMainConnectionIDType?
     private var slsSpaceCreate: SLSSpaceCreateType?
@@ -148,6 +150,8 @@ final class SkyLightSpaceBridge {
     private var cgsSetWindowTags: CGSSetWindowTagsType?
     private var cgsCopyManagedDisplaySpaces: CGSCopyManagedDisplaySpacesType?
     private var cgsCopySpacesForWindows: CGSCopySpacesForWindowsType?
+    private var slsCopySpaces: SLSCopySpacesType?
+    private var slsSpaceCopyName: SLSSpaceCopyNameType?
 
     private var lockSpaceID: UInt64?
 
@@ -183,6 +187,12 @@ final class SkyLightSpaceBridge {
         }
         if let sym = dlsym(handle, "CGSCopySpacesForWindows") {
             cgsCopySpacesForWindows = unsafeBitCast(sym, to: CGSCopySpacesForWindowsType.self)
+        }
+        if let sym = dlsym(handle, "SLSCopySpaces") {
+            slsCopySpaces = unsafeBitCast(sym, to: SLSCopySpacesType.self)
+        }
+        if let sym = dlsym(handle, "SLSSpaceCopyName") {
+            slsSpaceCopyName = unsafeBitCast(sym, to: SLSSpaceCopyNameType.self)
         }
     }
 
@@ -223,14 +233,42 @@ final class SkyLightSpaceBridge {
         showSpaces(cid, spaceArray)
     }
 
-    /// Detects whether macOS Mission Control / Exposé is currently active on screen.
+    /// Detects whether macOS Mission Control / App Exposé / Show Desktop is currently active on screen.
     func isMissionControlActive() -> Bool {
+        // Primary: Query active OS spaces (mask 0x9 = kCGSSpaceIncludesCurrent | kCGSSpaceIncludesOS).
+        // When Mission Control, App Exposé, or Show Desktop is presented, Dock activates its dedicated
+        // OS spaces ("mission-control", "SpacesBarWindowController", "show-front") in mask 0x9.
+        if let getMainConnectionID = slsMainConnectionID,
+           let copySpaces = slsCopySpaces,
+           let copyName = slsSpaceCopyName {
+            let cid = getMainConnectionID()
+            if let spaceIDs = copySpaces(cid, 0x9)?.takeRetainedValue() as? [NSNumber] {
+                for sid in spaceIDs {
+                    guard let rawName = copyName(cid, sid.uint64Value)?.takeRetainedValue() as String? else {
+                        continue
+                    }
+                    if rawName == "mission-control"
+                        || rawName == "SpacesBarWindowController"
+                        || rawName == "show-front"
+                        || rawName.contains("mission-control")
+                        || rawName.contains("SpacesBar") {
+                        return true
+                    }
+                }
+                return false
+            }
+        }
+
+        // Fallback: Inspect onscreen Dock windows
         guard let windowList = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] else {
             return false
         }
         for win in windowList {
             guard let owner = win[kCGWindowOwnerName as String] as? String, owner == "Dock" else { continue }
-            // Mission Control creates a window at Y == -1 or has name / bounds corresponding to Mission Control
+            let layer = win[kCGWindowLayer as String] as? Int ?? -1
+            if layer == 0 {
+                return true
+            }
             if let bounds = win[kCGWindowBounds as String] as? [String: Any],
                let y = bounds["Y"] as? CGFloat, y == -1 {
                 return true
@@ -539,16 +577,21 @@ final class NotchWindowController: NSObject {
     private var isMissionControlPresenting: Bool = false
     private var lastMissionControlCheckTime: TimeInterval = 0
     private var cachedMissionControlState: Bool = false
+    private var missionControlMonitorTimer: Timer?
+    private var missionControlEnterGraceDeadline: TimeInterval = 0
 
-    /// Fast, throttled check for Mission Control active state
+    /// Fast, throttled check for Mission Control active state, syncing transitions automatically.
     func isMissionControlActive() -> Bool {
-        if isMissionControlPresenting { return true }
         let now = CACurrentMediaTime()
-        if now - lastMissionControlCheckTime < 0.20 {
+        if now - lastMissionControlCheckTime < 0.08 {
             return cachedMissionControlState
         }
         lastMissionControlCheckTime = now
-        cachedMissionControlState = SkyLightSpaceBridge.shared.isMissionControlActive()
+        let active = SkyLightSpaceBridge.shared.isMissionControlActive()
+        cachedMissionControlState = active
+        if active != isMissionControlPresenting {
+            setMissionControlPresenting(active)
+        }
         return cachedMissionControlState
     }
 
@@ -560,11 +603,13 @@ final class NotchWindowController: NSObject {
         setupWindow(viewModel: viewModel)
         setupMouseHoverMonitors()
         observeScreenChanges()
+        startMissionControlMonitor()
     }
 
     deinit {
         idleHoverDwellWorkItem?.cancel()
         expandedWatchdogTimer?.invalidate()
+        missionControlMonitorTimer?.invalidate()
         collapseCanvasWorkItem?.cancel()
         screenTransferTimer?.invalidate()
         if let globalMouseMonitor { NSEvent.removeMonitor(globalMouseMonitor) }
@@ -1624,14 +1669,78 @@ final class NotchWindowController: NSObject {
         }
     }
 
+    private func startMissionControlMonitor() {
+        missionControlMonitorTimer?.invalidate()
+        let timer = Timer(timeInterval: 0.10, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.pollMissionControlState()
+            }
+        }
+        timer.tolerance = 0.03
+        RunLoop.main.add(timer, forMode: .common)
+        missionControlMonitorTimer = timer
+    }
+
+    private func pollMissionControlState() {
+        guard !isScreenLocked else { return }
+        let now = CACurrentMediaTime()
+        let active = SkyLightSpaceBridge.shared.isMissionControlActive()
+        if !active && isMissionControlPresenting && now < missionControlEnterGraceDeadline {
+            return
+        }
+        lastMissionControlCheckTime = now
+        cachedMissionControlState = active
+        if active != isMissionControlPresenting {
+            setMissionControlPresenting(active)
+        }
+    }
+
+    func notifyMissionControlLaunching() {
+        missionControlEnterGraceDeadline = CACurrentMediaTime() + 0.55
+        setMissionControlPresenting(true)
+    }
+
+    private func setMissionControlPresenting(_ presenting: Bool) {
+        guard presenting != isMissionControlPresenting else { return }
+        isMissionControlPresenting = presenting
+        cachedMissionControlState = presenting
+
+        if presenting {
+            missionControlEnterGraceDeadline = max(missionControlEnterGraceDeadline, CACurrentMediaTime() + 0.35)
+            idleHoverDwellWorkItem?.cancel()
+            idleHoverDwellWorkItem = nil
+            stopExpandedWatchdog()
+            setKeyFocus(false)
+            window.ignoresMouseEvents = true
+            isMouseInside = false
+            hoverRetentionSize = .zero
+            transitionGraceDeadline = .distantPast
+            viewModel?.onMissionControlEntered()
+        } else {
+            window.orderFrontRegardless()
+            pinWindowAcrossDesktops()
+            viewModel?.onMissionControlExited()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
+                self?.evaluateMouseHover()
+            }
+        }
+    }
+
     @objc private func activeSpaceChanged() {
         MainActor.assumeIsolated {
-            self.isMissionControlPresenting = false
-            self.cachedMissionControlState = false
             // Keep the panel pinned and in front on the newly active desktop (no re-appear lag).
             self.window.orderFrontRegardless()
             self.pinWindowAcrossDesktops()
-            guard let vm = self.viewModel, vm.isExpanded else { return }
+            self.pollMissionControlState()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in
+                self?.pollMissionControlState()
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) { [weak self] in
+                self?.pollMissionControlState()
+            }
+            guard !self.isMissionControlPresenting,
+                  let vm = self.viewModel,
+                  vm.isExpanded else { return }
             if !vm.isShowingOnboardingOrGreeting {
                 vm.collapseToIdleOrCompact()
             }
@@ -1640,24 +1749,13 @@ final class NotchWindowController: NSObject {
 
     @objc private func missionControlEnterReceived() {
         MainActor.assumeIsolated {
-            self.isMissionControlPresenting = true
-            self.cachedMissionControlState = true
-            self.window.ignoresMouseEvents = true
-            self.isMouseInside = false
-            self.hoverRetentionSize = .zero
-            if let vm = self.viewModel {
-                vm.collapseToIdleOrCompact()
-            }
+            self.setMissionControlPresenting(true)
         }
     }
 
     @objc private func missionControlExitReceived() {
         MainActor.assumeIsolated {
-            self.isMissionControlPresenting = false
-            self.cachedMissionControlState = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-                self?.evaluateMouseHover()
-            }
+            self.setMissionControlPresenting(false)
         }
     }
 

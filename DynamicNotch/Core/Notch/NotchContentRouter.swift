@@ -1235,7 +1235,7 @@ struct DesktopSpacesSwitcherView: View {
     private var footerMissionControlButton: some View {
         Button {
             NSHapticFeedbackManager.defaultPerformer.perform(.alignment, performanceTime: .default)
-            viewModel.collapseToIdleOrCompact()
+            viewModel.windowController?.notifyMissionControlLaunching()
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
                 NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Mission Control.app"))
             }
